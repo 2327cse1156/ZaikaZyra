@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import { useNavigate } from "react-router-dom";
@@ -10,17 +10,17 @@ function SignIn() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState(""); // For inline messages
-  const [messageType, setMessageType] = useState("error"); // 'error' or 'success'
+  const [message, setMessage] = useState(""); 
+  const [messageType, setMessageType] = useState("error"); 
 
   // --- Color Palette ---
-  const primaryColor = "#22C55E"; // vibrant green
-  const bgColor = "#FFF7ED"; // warm off-white background
-  const borderColor = "#E5E7EB"; // light gray
-  const bubbleColors = ["#FBBF24", "#86EFAC", "#22C55E"]; // bubbles
+  const primaryColor = "#22C55E"; 
+  const bgColor = "#FFF7ED"; 
+  const borderColor = "#E5E7EB"; 
+  const bubbleColors = ["#FBBF24", "#86EFAC", "#22C55E"]; 
 
   const handleSignIn = async () => {
-    setMessage(""); // reset message
+    setMessage(""); 
     try {
       if (!email || !password) {
         setMessage("Email and Password are required");
@@ -36,7 +36,7 @@ function SignIn() {
 
       setMessage(result.data.message || "Sign in successful!");
       setMessageType("success");
-      setTimeout(() => navigate("/"), 1000); // redirect after 1s
+      setTimeout(() => navigate("/"), 1000); 
     } catch (error) {
       if (error.response) {
         setMessage(error.response.data.message || "Sign in failed!");
@@ -125,6 +125,14 @@ function SignIn() {
                 {!showPassword ? <FaRegEye /> : <FaRegEyeSlash />}
               </button>
             </div>
+
+            {/* Forgot password link */}
+            <p
+              onClick={() => navigate("/forgot-password")}
+              className="text-sm text-green-600 font-semibold mt-2 cursor-pointer hover:underline text-right"
+            >
+              Forgot Password?
+            </p>
           </div>
         </div>
 
