@@ -4,23 +4,26 @@ import { FcGoogle } from "react-icons/fc";
 import { useNavigate } from "react-router-dom";
 import { serverUrl } from "../App";
 import axios from "axios";
+import { GoogleAuthProvider } from "firebase/auth";
+import { auth } from "../../firebase";
+import { signInWithPopup } from "firebase/auth";
 
 function SignIn() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState(""); 
-  const [messageType, setMessageType] = useState("error"); 
+  const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState("error");
 
   // --- Color Palette ---
-  const primaryColor = "#22C55E"; 
-  const bgColor = "#FFF7ED"; 
-  const borderColor = "#E5E7EB"; 
-  const bubbleColors = ["#FBBF24", "#86EFAC", "#22C55E"]; 
+  const primaryColor = "#22C55E";
+  const bgColor = "#FFF7ED";
+  const borderColor = "#E5E7EB";
+  const bubbleColors = ["#FBBF24", "#86EFAC", "#22C55E"];
 
   const handleSignIn = async () => {
-    setMessage(""); 
+    setMessage("");
     try {
       if (!email || !password) {
         setMessage("Email and Password are required");
@@ -36,13 +39,36 @@ function SignIn() {
 
       setMessage(result.data.message || "Sign in successful!");
       setMessageType("success");
-      setTimeout(() => navigate("/"), 1000); 
+      setTimeout(() => navigate("/"), 1000);
     } catch (error) {
       if (error.response) {
         setMessage(error.response.data.message || "Sign in failed!");
       } else {
         setMessage("Something went wrong. Please try again.");
       }
+      setMessageType("error");
+    }
+  };
+
+  const handleGoogleAuth = async () => {
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    try {
+      const { data } = await axios.post(
+        `${serverUrl}/api/auth/google-auth`,
+        {
+          email: result.user.email,
+        },
+        { withCredentials: true }
+      );
+      console.log(result);
+      setMessage("Google signup successful!");
+      setMessageType("success");
+      setTimeout(() => navigate("/signin"), 1000);
+      console.log(data);
+    } catch (error) {
+      console.log(error);
+      setMessage("Google signup failed!");
       setMessageType("error");
     }
   };
@@ -103,6 +129,7 @@ function SignIn() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full mt-2 px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-300 shadow-sm hover:shadow-md"
+              required
             />
           </div>
 
@@ -115,6 +142,7 @@ function SignIn() {
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                required
                 className="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-300 shadow-sm hover:shadow-md"
               />
               <button
@@ -146,7 +174,7 @@ function SignIn() {
         </button>
 
         {/* Google Sign In */}
-        <button className="w-full flex items-center justify-center gap-3 border border-gray-300 py-3 rounded-xl mt-4 hover:bg-gray-100 transition duration-300 animate-slideUp delay-100 shadow-sm">
+        <button onClick={handleGoogleAuth} className="w-full flex items-center justify-center gap-3 border border-gray-300 py-3 rounded-xl mt-4 hover:bg-gray-100 transition duration-300 animate-slideUp delay-100 shadow-sm">
           <FcGoogle size={24} />
           <span>Sign in with Google</span>
         </button>

@@ -4,7 +4,9 @@ import { FcGoogle } from "react-icons/fc";
 import { useNavigate } from "react-router-dom";
 import { serverUrl } from "../App";
 import axios from "axios";
-
+import { GoogleAuthProvider } from "firebase/auth";
+import { auth } from "../../firebase";
+import { signInWithPopup } from "firebase/auth";
 function SignUp() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
@@ -47,6 +49,34 @@ function SignUp() {
       } else {
         setMessage("Something went wrong. Please try again.");
       }
+      setMessageType("error");
+    }
+  };
+
+  const handleGoogleAuth = async () => {
+    const provider = new GoogleAuthProvider();
+    
+      if(!mobile) {
+        setMessage("Please enter your mobile number before Google signup");
+        return;
+      }
+      const result = await signInWithPopup(auth, provider);
+      try {
+        const {data} = await axios.post(`${serverUrl}/api/auth/google-auth`,{
+          fullName:result.user.displayName,
+          email:result.user.email,
+          role,
+          mobile
+        },{withCredentials:true})
+        console.log(result);
+        setMessage("Google signup successful!");
+        setMessageType("success");
+        setTimeout(() => navigate("/signin"), 1000);
+        console.log(data);
+        
+      } catch (error) {
+      console.log(error);
+      setMessage("Google signup failed!");
       setMessageType("error");
     }
   };
@@ -103,6 +133,7 @@ function SignUp() {
             <label className="block text-gray-700 font-medium">Full Name</label>
             <input
               type="text"
+              required
               placeholder="Enter your full name"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
@@ -115,6 +146,7 @@ function SignUp() {
             <label className="block text-gray-700 font-medium">Email</label>
             <input
               type="email"
+              required
               placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -129,6 +161,7 @@ function SignUp() {
               type="tel"
               placeholder="Enter your mobile number"
               value={mobile}
+              required
               onChange={(e) => setMobile(e.target.value)}
               className="w-full mt-2 px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-300 shadow-sm hover:shadow-md"
             />
@@ -142,6 +175,7 @@ function SignUp() {
                 type={showPassword ? "text" : "password"}
                 placeholder="Enter your password"
                 value={password}
+                required
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-300 shadow-sm hover:shadow-md"
               />
@@ -188,7 +222,7 @@ function SignUp() {
         </button>
 
         {/* Google Sign Up */}
-        <button className="w-full flex items-center justify-center gap-3 border border-gray-300 py-3 rounded-xl mt-4 hover:bg-gray-100 transition duration-300 animate-slideUp delay-100 shadow-sm">
+        <button onClick={handleGoogleAuth} className="w-full flex items-center justify-center gap-3 border border-gray-300 py-3 rounded-xl mt-4 hover:bg-gray-100 transition duration-300 animate-slideUp delay-100 shadow-sm">
           <FcGoogle size={24} />
           <span>Sign up with Google</span>
         </button>
