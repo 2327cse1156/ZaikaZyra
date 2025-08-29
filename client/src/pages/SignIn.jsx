@@ -8,6 +8,7 @@ import { GoogleAuthProvider } from "firebase/auth";
 import { auth } from "../../firebase";
 import { signInWithPopup } from "firebase/auth";
 import { useDispatch } from "react-redux";
+import { setUserData } from "../redux/userSlice";
 
 function SignIn() {
   const navigate = useNavigate();

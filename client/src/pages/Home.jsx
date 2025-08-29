@@ -1,10 +1,14 @@
-import React from 'react'
-
+import { useSelector } from "react-redux"
+import DeliveryBoy from "../components/DeliveryBoy"
+import OwnerDashboard from "../components/OwnerDashboard"
+import UserDashboard from "../components/UserDashboard"
 function Home() {
+    const {userData}=useSelector(state=>state.user)
   return (
     <div>
-      <h1>Welcome to ZaikaZyra</h1>
-      <p>Your one-stop solution for all your culinary needs.</p>
+        {userData.role=="user" && <UserDashboard />}
+        {userData.role=="owner" && <OwnerDashboard />}
+        {userData.role=="deliveryBoy" && <DeliveryBoy />}
     </div>
   )
 }
