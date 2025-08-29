@@ -7,6 +7,8 @@ import axios from "axios";
 import { GoogleAuthProvider } from "firebase/auth";
 import { auth } from "../../firebase";
 import { signInWithPopup } from "firebase/auth";
+import { useDispatch } from "react-redux";
+import { setUserData } from "../redux/userSlice";
 function SignUp() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
@@ -24,9 +26,10 @@ function SignUp() {
   const bgColor = "#FFF7ED"; // warm off-white background
   const borderColor = "#E5E7EB"; // light gray
   const bubbleColors = ["#FBBF24", "#86EFAC", "#22C55E"]; // bubbles
+  const dispatch=useDispatch();
 
   const handleSignUp = async () => {
-    setMessage(""); // reset message
+    setMessage(""); 
     try {
       if (!fullName || !email || !mobile || !password) {
         setMessage("All fields are required");
@@ -39,6 +42,7 @@ function SignUp() {
         { fullName, email, mobile, password, role },
         { withCredentials: true }
       );
+      dispatch(setUserData(result.data));
 
       setMessage(result.data.message || "Signup successful!");
       setMessageType("success");
@@ -72,7 +76,7 @@ function SignUp() {
         setMessage("Google signup successful!");
         setMessageType("success");
         setTimeout(() => navigate("/signin"), 1000);
-        console.log(data);
+        dispatch(setUserData(data));
         
       } catch (error) {
       console.log(error);

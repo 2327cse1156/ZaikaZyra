@@ -7,6 +7,7 @@ import axios from "axios";
 import { GoogleAuthProvider } from "firebase/auth";
 import { auth } from "../../firebase";
 import { signInWithPopup } from "firebase/auth";
+import { useDispatch } from "react-redux";
 
 function SignIn() {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ function SignIn() {
   const bgColor = "#FFF7ED";
   const borderColor = "#E5E7EB";
   const bubbleColors = ["#FBBF24", "#86EFAC", "#22C55E"];
-
+  const dispatch = useDispatch();
   const handleSignIn = async () => {
     setMessage("");
     try {
@@ -36,6 +37,8 @@ function SignIn() {
         { email, password },
         { withCredentials: true }
       );
+
+      dispatch(setUserData(result.data));
 
       setMessage(result.data.message || "Sign in successful!");
       setMessageType("success");
@@ -61,7 +64,7 @@ function SignIn() {
         },
         { withCredentials: true }
       );
-      console.log(result);
+      dispatch(setUserData(data));
       setMessage("Google signup successful!");
       setMessageType("success");
       setTimeout(() => navigate("/signin"), 1000);
