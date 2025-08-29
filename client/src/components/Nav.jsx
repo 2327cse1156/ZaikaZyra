@@ -27,131 +27,74 @@ function Nav() {
   };
 
   return (
-    <header className="relative bg-white shadow-md z-50">
+    <div className="relative min-h-[80px] bg-[#FFF7ED] flex items-center justify-center overflow-hidden">
       {/* Background bubbles */}
-      <div
-        className="absolute w-40 h-40 rounded-full opacity-20 animate-bounce-slow -top-10 -left-10"
-        style={{ backgroundColor: "#86EFAC" }}
-      />
-      <div
-        className="absolute w-32 h-32 rounded-full opacity-20 animate-bounce-slower top-0 right-0"
-        style={{ backgroundColor: "#22C55E" }}
-      />
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute top-2 left-5 w-20 h-20 bg-green-200 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-pulse"></div>
+        <div className="absolute top-8 right-10 w-24 h-24 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-pulse delay-2000"></div>
+        <div className="absolute bottom-2 left-1/3 w-28 h-28 bg-yellow-200 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-pulse delay-4000"></div>
+      </div>
 
-      {/* Navbar */}
-      <nav className="relative container mx-auto px-4 py-3 flex justify-between items-center">
+      {/* Navbar content */}
+      <div className="w-[95%] max-w-6xl bg-white/40 backdrop-blur-md border border-white/30 shadow-lg rounded-2xl px-6 py-3 flex items-center justify-between">
+        {/* Left section */}
+        <div className="flex items-center gap-3">
+          <FaLocationDot className="text-green-600" size={22} />
+          <span className="text-gray-800 font-medium">{city}</span>
+        </div>
+
         {/* Logo */}
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-green-600 animate-slideDown">
-          ZaikaZyra
-        </h1>
+        <h1 className="text-2xl font-extrabold text-green-700">ZaikaZyra</h1>
 
-        {/* Search / Location / Cart */}
-        <div className="hidden md:flex items-center gap-6">
-          {/* Location */}
-          <div className="flex items-center gap-2 text-gray-700 animate-slideLeft">
-            <FaLocationDot size={20} className="text-green-500" />
-            <span className="font-medium">{city}</span>
-          </div>
-
-          {/* Search */}
-          <div className="relative animate-slideLeft delay-100">
+        {/* Search + Cart */}
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 bg-white/60 px-3 py-1 rounded-full border border-gray-200">
             <FaSearch
-              size={20}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              className="text-gray-500 cursor-pointer"
+              onClick={() => setShowSearch((prev) => !prev)}
             />
-            <input
-              type="text"
-              placeholder="Search delicious food..."
-              className="pl-10 pr-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-green-500 w-64 shadow-sm hover:shadow-md transition"
-            />
+            {showSearch && (
+              <input
+                type="text"
+                placeholder="Search food..."
+                className="bg-transparent outline-none text-sm text-gray-700"
+              />
+            )}
           </div>
 
-          {/* Cart */}
-          <div className="relative animate-slideLeft delay-200">
-            <FaShoppingCart
-              size={22}
-              className="text-gray-700 cursor-pointer hover:text-green-600 transition"
-            />
-            <span className="absolute -top-2 -right-2 bg-green-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full shadow">
+          <div className="relative">
+            <FaShoppingCart size={22} className="text-gray-700" />
+            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-2 rounded-full">
               0
             </span>
           </div>
         </div>
 
-        {/* Right Section */}
-        <div className="flex items-center gap-4">
-          {/* Orders */}
-          <button className="hidden sm:block bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-full shadow-md transition animate-slideUp">
-            My Orders
-          </button>
-
-          {/* User Avatar */}
-          <div
-            className="w-10 h-10 flex items-center justify-center bg-green-100 rounded-full cursor-pointer font-bold text-green-600 shadow-sm hover:shadow-md transition"
-            onClick={() => setShowInfo((prev) => !prev)}
-          >
-            {userData?.fullName?.slice(0, 1) || "U"}
-          </div>
-
-          {/* Dropdown */}
+        {/* User menu */}
+        <div
+          className="relative cursor-pointer bg-green-600 text-white rounded-full w-10 h-10 flex items-center justify-center font-bold"
+          onClick={() => setShowInfo((prev) => !prev)}
+        >
+          {userData?.fullName?.slice(0, 1) || "?"}
           {showInfo && userData && (
-            <div className="absolute top-16 right-4 bg-white shadow-lg rounded-xl p-4 w-52 animate-fadeIn">
-              <div className="font-semibold text-gray-800 mb-2">
+            <div className="absolute top-12 right-0 bg-white shadow-lg rounded-lg py-2 w-40 text-sm border border-gray-200">
+              <div className="px-4 py-2 font-semibold text-gray-800">
                 {userData.fullName}
               </div>
-              <div className="text-gray-600 cursor-pointer hover:text-green-600 transition">
+              <div className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
                 My Orders
               </div>
               <div
+                className="px-4 py-2 text-red-600 hover:bg-gray-100 cursor-pointer"
                 onClick={handleLogOut}
-                className="text-gray-600 mt-2 cursor-pointer hover:text-green-600 transition"
               >
                 Log Out
               </div>
             </div>
           )}
         </div>
-      </nav>
-
-      {/* Mobile Search + Icons */}
-      {showSearch && (
-        <div className="md:hidden px-4 pb-4">
-          <div className="relative">
-            <FaSearch
-              size={20}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-            />
-            <input
-              type="text"
-              placeholder="Search delicious food..."
-              className="pl-10 pr-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-green-500 w-full shadow-sm hover:shadow-md transition"
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Animations */}
-      <style>{`
-        @keyframes bounce-slow {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-15px); }
-        }
-        .animate-bounce-slow { animation: bounce-slow 10s ease-in-out infinite; }
-        .animate-bounce-slower { animation: bounce-slow 14s ease-in-out infinite; }
-
-        @keyframes fadeIn { from {opacity:0} to {opacity:1} }
-        .animate-fadeIn { animation: fadeIn 0.4s ease-in forwards; }
-
-        @keyframes slideDown { from {opacity:0; transform: translateY(-10px);} to {opacity:1; transform: translateY(0);} }
-        .animate-slideDown { animation: slideDown 0.5s ease-in forwards; }
-
-        @keyframes slideLeft { from {opacity:0; transform: translateX(-10px);} to {opacity:1; transform: translateX(0);} }
-        .animate-slideLeft { animation: slideLeft 0.6s ease-in forwards; }
-
-        @keyframes slideUp { from {opacity:0; transform: translateY(10px);} to {opacity:1; transform: translateY(0);} }
-        .animate-slideUp { animation: slideUp 0.6s ease-in forwards; }
-      `}</style>
-    </header>
+      </div>
+    </div>
   );
 }
 
