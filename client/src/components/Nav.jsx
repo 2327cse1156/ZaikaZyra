@@ -1,4 +1,3 @@
-// Nav.jsx
 import { FaLocationDot } from "react-icons/fa6";
 import { FaSearch, FaShoppingCart } from "react-icons/fa";
 import { useSelector, useDispatch } from "react-redux";
@@ -27,16 +26,16 @@ function Nav() {
   };
 
   return (
-    <div className="relative min-h-[80px] bg-[#FFF7ED] flex items-center justify-center overflow-hidden">
+    <div className="relative min-h-[80px] bg-[#FFF7ED] flex items-center justify-center">
       {/* Background bubbles */}
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute top-2 left-5 w-20 h-20 bg-green-200 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-pulse"></div>
-        <div className="absolute top-8 right-10 w-24 h-24 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-pulse delay-2000"></div>
-        <div className="absolute bottom-2 left-1/3 w-28 h-28 bg-yellow-200 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-pulse delay-4000"></div>
+      <div className="absolute inset-0 -z-10 pointer-events-none overflow-hidden">
+        <div className="absolute top-2 left-5 w-20 h-20 bg-green-300 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-pulse"></div>
+        <div className="absolute top-8 right-10 w-24 h-24 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-pulse [animation-delay:2s]"></div>
+        <div className="absolute bottom-2 left-1/3 w-28 h-28 bg-yellow-300 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-pulse [animation-delay:4s]"></div>
       </div>
 
       {/* Navbar content */}
-      <div className="w-[95%] max-w-6xl bg-white/40 backdrop-blur-md border border-white/30 shadow-lg rounded-2xl px-6 py-3 flex items-center justify-between">
+      <div className="relative w-[95%] max-w-6xl bg-white/60 backdrop-blur-md border border-white/40 shadow-lg rounded-2xl px-6 py-3 flex items-center justify-between z-20">
         {/* Left section */}
         <div className="flex items-center gap-3">
           <FaLocationDot className="text-green-600" size={22} />
@@ -48,7 +47,7 @@ function Nav() {
 
         {/* Search + Cart */}
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 bg-white/60 px-3 py-1 rounded-full border border-gray-200">
+          <div className="flex items-center gap-2 bg-white/70 px-3 py-1 rounded-full border border-gray-200">
             <FaSearch
               className="text-gray-500 cursor-pointer"
               onClick={() => setShowSearch((prev) => !prev)}
@@ -71,21 +70,25 @@ function Nav() {
         </div>
 
         {/* User menu */}
-        <div
-          className="relative cursor-pointer bg-green-600 text-white rounded-full w-10 h-10 flex items-center justify-center font-bold"
-          onClick={() => setShowInfo((prev) => !prev)}
-        >
-          {userData?.fullName?.slice(0, 1) || "?"}
+        <div className="relative">
+          <div
+            className="cursor-pointer bg-green-600 text-white rounded-full w-10 h-10 flex items-center justify-center font-bold"
+            onClick={() => setShowInfo((prev) => !prev)}
+          >
+            {userData?.fullName?.slice(0, 1) || "?"}
+          </div>
+
+          {/* Dropdown */}
           {showInfo && userData && (
-            <div className="absolute top-12 right-0 bg-white shadow-lg rounded-lg py-2 w-40 text-sm border border-gray-200">
-              <div className="px-4 py-2 font-semibold text-gray-800">
+            <div className="absolute top-12 right-0 z-[9999] bg-gray-900 text-white shadow-2xl rounded-lg py-2 w-44 text-sm border border-gray-700">
+              <div className="px-4 py-2 font-semibold border-b border-gray-700">
                 {userData.fullName}
               </div>
-              <div className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+              <div className="px-4 py-2 hover:bg-gray-800 cursor-pointer">
                 My Orders
               </div>
               <div
-                className="px-4 py-2 text-red-600 hover:bg-gray-100 cursor-pointer"
+                className="px-4 py-2 text-red-400 hover:bg-gray-800 cursor-pointer"
                 onClick={handleLogOut}
               >
                 Log Out
