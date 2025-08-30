@@ -17,7 +17,6 @@ function Nav() {
   const [showInfo, setShowInfo] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
-
   const dispatch = useDispatch();
   const userData = useSelector((state) => state.user.userData);
   const city = useSelector((state) => state.user.city) || "Unknown";
@@ -91,11 +90,13 @@ function Nav() {
 
           {role === "owner" && (
             <>
+              {/* Always visible Add Food button */}
               <button className="flex items-center gap-2 bg-green-600 hover:bg-green-700 transition text-white px-4 py-2 rounded-full shadow-md">
                 <FaPlus size={16} />
-                <span>Add Food</span>
+                <span>Add Food Item</span>
               </button>
 
+              {/* Orders */}
               <div className="flex items-center gap-2 text-gray-700 font-medium cursor-pointer hover:text-green-600 transition">
                 <MdReceiptLong size={20} />
                 <span>Orders</span>
@@ -184,6 +185,7 @@ function Nav() {
           {/* OWNER role */}
           {role === "owner" && (
             <>
+              {/* Always visible Add Food button */}
               <button
                 className="w-full flex items-center gap-2 justify-center bg-green-600 hover:bg-green-700 transition text-white px-4 py-2 rounded-lg mb-3 shadow"
                 onClick={() => console.log("Add Food clicked")}

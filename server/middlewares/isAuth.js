@@ -4,13 +4,15 @@ const isAuth = (req, res, next) => {
   try {
     const token = req.cookies.token;
     if (!token) {
-      return res.status(400).json({ message: "Unauthorized" });
+      return res.status(401).json({ message: "Unauthorized" });
     }
     const decodeToken = jwt.verify(token, process.env.JWT_SECRET);
     if (!decodeToken) {
-      return res.status(400).json({ message: "Unauthorized" });
+      return res.status(401).json({ message: "Unauthorized" });
     }
-    req.userId = decodeToken.userId;
+    req.userId = decodeToken.userId || decodeToken.id;
+    console.log(decodeToken);
+    
     next();
   } catch (error) {
     return res.status(500).json({ message: "Internal Server Error" });
