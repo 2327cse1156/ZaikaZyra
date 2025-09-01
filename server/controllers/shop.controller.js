@@ -5,14 +5,20 @@ export const createEditShop = async (req, res) => {
   try {
     const { name, city, state, address } = req.body;
     let image;
+
     if (req.file) {
+      console.log("📸 File received:", req.file.path);
       image = await uploadOnCloudinary(req.file.path);
+    } else {
+      console.log("⚠️ No file uploaded");
     }
+
     let shop = await Shop.findOne({ owner: req.userId });
+
     if (shop) {
       shop = await Shop.findByIdAndUpdate(
         shop._id,
-        { name, city, state, address, image },
+        { name, city, state, address, ...(image && { image }) },
         { new: true }
       );
     } else {
@@ -23,14 +29,17 @@ export const createEditShop = async (req, res) => {
         address,
         image,
         owner: req.userId,
-      },{new:true});
+      });
     }
+
     await shop.populate("owner");
     res.status(201).json(shop);
   } catch (error) {
-    res.status(500).json({ message: "Error creating shop", error });
+    console.error("❌ Error creating/editing shop:", error);
+    res.status(500).json({ message: "Error creating/editing shop", error });
   }
 };
+
 
 export const getMyShop = async (req,res) => {
     try {

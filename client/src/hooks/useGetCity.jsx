@@ -3,6 +3,7 @@ import axios from "axios";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { setCity } from "../redux/userSlice";
+import { setCurrentState, setCurrentAddress } from "../redux/userSlice";
 
 function useGetCity() {
   const dispatch = useDispatch();
@@ -16,9 +17,32 @@ function useGetCity() {
         );
         const city =
           result?.data?.results?.[0]?.city ||
-          result?.data?.results?.[0]?.county ||
+          result?.town ||
+          result?.village ||
+          result?.municipality ||
+          result?.county ||
+          result?.state_district ||
+          result?.state ||
+          result?.data?.results?.[0]?.country ||
           "Unknown";
         dispatch(setCity(city));
+        dispatch(
+          setCurrentState(result?.data?.results?.[0]?.state || "Unknown")
+        );
+        dispatch(
+          setCurrentAddress(
+            result?.formatted ||
+            result?.data?.results?.[0]?.address_line2 ||
+              result?.data?.results?.[0]?.address_line1 ||
+              "Unknown"
+          )
+        );
+        console.log("City:", city);
+        console.log("State:", result?.data?.results?.[0]?.state || "Unknown");
+        console.log(
+          "Address:",
+          result?.data?.results?.[0]?.formatted || "Unknown"
+        );
       } catch (err) {
         console.error("Error fetching city:", err);
       }
