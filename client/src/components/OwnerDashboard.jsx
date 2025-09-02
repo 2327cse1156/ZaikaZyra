@@ -3,7 +3,7 @@ import { FaUtensils } from "react-icons/fa";
 import { FaPen } from "react-icons/fa";
 import Nav from "./Nav";
 import { useNavigate } from "react-router-dom";
-
+import OwnerItemCard from "./ownerItemCard";
 function OwnerDashboard() {
   const { myShopData } = useSelector((state) => state.owner);
 
@@ -97,7 +97,21 @@ function OwnerDashboard() {
                 </div>
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-3">Your Food Item</h2>
                 <p className="text-gray-600 text-sm sm:text-base mb-6">Add your delicious food items to the menu</p>
-                <button className="bg-green-600 hover:bg-green-700 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-full shadow-lg font-semibold transition-transform hover:scale-105 active:scale-95" onClick={() => navigate("/add-food")}>➕Add Food</button>
+                <button className="bg-green-600 hover:bg-green-700 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-full shadow-lg font-semibold transition-transform hover:scale-105 active:scale-95" onClick={() => navigate("/add-item")}>➕Add Food</button>
+              </div>
+            </div>
+          )}
+
+          {myShopData?.items?.length > 0 && (
+            <div className="mt-10">
+              <h2 className="text-2xl font-semibold text-gray-800  mb-6">Your Menu Items</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {myShopData.items.map((item,index) => (
+                <div key={index}  className="bg-white shadow-md rounded-2xl p-4 hover:shadow-lg transition">
+                  {console.log(item)}
+                 <OwnerItemCard  data={item} />
+                </div>
+              ))}
               </div>
             </div>
           )}

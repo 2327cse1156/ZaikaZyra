@@ -32,7 +32,7 @@ export const createEditShop = async (req, res) => {
       });
     }
 
-    await shop.populate("owner");
+    await shop.populate(["owner", "items"]);
     res.status(201).json(shop);
   } catch (error) {
     console.error("❌ Error creating/editing shop:", error);
@@ -40,18 +40,23 @@ export const createEditShop = async (req, res) => {
   }
 };
 
+export const getMyShop = async (req, res) => {
+  try {
+    console.log("🔑 User ID:", req.userId);
 
-export const getMyShop = async (req,res) => {
-    try {
-      console.log(req.userId);
-        const shop = await Shop.findOne({owner:req.userId}).populate("owner");
-        if(!shop){
-          console.log("No shop found for user:", req.userId);
-          return res.status(404).json(null);
-        }
-        return res.status(200).json(shop);
-    } catch (error) {
-      console.error("Error fetching shop:", error);
-        return res.status(500).json({message:"Error fetching shop",error});
+    const shop = await Shop.findOne({ owner: req.userId }).populate([
+      "owner",
+      "items",
+    ]);
+
+    if (!shop) {
+      console.log("⚠️ No shop found for user:", req.userId);
+      return res.status(404).json(null);
     }
-}
+
+    return res.status(200).json(shop);
+  } catch (error) {
+    console.error("❌ Error fetching shop:", error);
+    return res.status(500).json({ message: "Error fetching shop", error });
+  }
+};

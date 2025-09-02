@@ -1,34 +1,38 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { IoMdArrowRoundBack } from "react-icons/io";
 import { useDispatch, useSelector } from "react-redux";
 import { FaUtensils } from "react-icons/fa";
-import { use, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { serverUrl } from "../App";
 import { setMyShopData } from "../redux/ownerSlice";
 
-function AddItem() {
+function EditItem() {
   const navigate = useNavigate();
   const { myShopData } = useSelector((state) => state.owner);
+  const { itemId } = useParams();
+  const [currentItem, setCurrentItem] = useState(null);
   const [name, setName] = useState("");
   const [price, setPrice] = useState(0);
-  const [frontendImage, setFrontendImage] = useState(null);
+  const [frontendImage, setFrontendImage] = useState("");
   const [backendImage, setBackendImage] = useState(null);
   const [category, setCategory] = useState("");
   const [foodType, setFoodType] = useState("Veg");
+  const [loading, setLoading] = useState(false);
   const categories = [
-        "Snacks",
-        "Main Course",
-        "Desserts",
-        "Pizza",
-        "Burgers",
-        "Sandwiches",
-        "South Indian",
-        "North Indian",
-        "Chinese",
-        "Fast Food",
-        "Others",
+    "Snacks",
+    "Main Course",
+    "Desserts",
+    "Pizza",
+    "Burgers",
+    "Sandwiches",
+    "South Indian",
+    "North Indian",
+    "Chinese",
+    "Fast Food",
+    "Others",
   ];
+
   const dispatch = useDispatch();
 
   const handleImage = (e) => {
@@ -39,6 +43,7 @@ function AddItem() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const formData = new FormData();
       formData.append("name", name);
@@ -50,7 +55,7 @@ function AddItem() {
       }
 
       const result = await axios.post(
-        `${serverUrl}/api/item/add-item`,
+        `${serverUrl}/api/item/edit-item/${itemId}`,
         formData,
         {
           withCredentials: true,
@@ -62,10 +67,36 @@ function AddItem() {
         throw new Error("Failed to save shop");
       }
       dispatch(setMyShopData(result.data));
+      setLoading(false);
+      navigate("/");
     } catch (error) {
       console.error(error);
+      setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const handleGetItemById = async () => {
+      try {
+        const result = await axios.get(
+          `${serverUrl}/api/item/get-by-id/${itemId}`,
+          { withCredentials: true }
+        );
+        setCurrentItem(result.data);
+        setFrontendImage(result.data.image);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    handleGetItemById();
+  }, [itemId]);
+
+  useEffect(() => {
+    setName(currentItem?.name || "");
+    setPrice(currentItem?.price || 0);
+    setCategory(currentItem?.category || "");
+    setFoodType(currentItem?.foodType || "Veg");
+  }, [currentItem]);
 
   const bubbleColors = ["#FBBF24", "#86EFAC", "#22C55E"];
 
@@ -103,11 +134,11 @@ function AddItem() {
             <IoMdArrowRoundBack size={24} className="mr-2" />
             Back
           </button>
-          <FaUtensils className="text-green-600 text-2xl" />
+          <FaUtensils className="text-green-600 text-2xl " />
         </div>
 
         <h2 className="text-2xl md:text-3xl font-bold text-gray-800 text-center mb-6">
-          Add Food
+          Edit Food
         </h2>
 
         {/* Form */}
@@ -136,14 +167,14 @@ function AddItem() {
               onChange={handleImage}
               type="file"
               accept="image/*"
-              className="w-full text-sm text-gray-600"
+              className="w-full text-sm text-gray-600 cursor-pointer"
             />
-            {frontendImage && (
+            {(frontendImage || currentItem?.image) && (
               <div className="mt-3">
                 <img
-                  src={frontendImage}
-                  alt="Shop Preview"
-                  className="w-full h-48 object-cover rounded-lg shadow-md"
+                  src={frontendImage || currentItem?.image}
+                  alt="Food Preview"
+                  className="w-full h-48 object-cover rounded-xl border shadow-md"
                 />
               </div>
             )}
@@ -195,21 +226,18 @@ function AddItem() {
               required
               className="w-full px-4 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 outline-none"
             >
-              <option value="Veg">
-                Veg
-              </option>
-              <option value="Non-Veg">
-                Non-Veg
-              </option>
+              <option value="Veg">Veg</option>
+              <option value="Non-Veg">Non-Veg</option>
             </select>
           </div>
 
           {/* Submit */}
           <button
             type="submit"
-            className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 rounded-full shadow-lg transition"
+            className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl shadow-md transition-transform hover:scale-[1.02] active:scale-[0.98]"
+            disabled={loading}
           >
-            💾 Save
+            {loading ? "Saving..." : "💾 Save"}
           </button>
         </form>
       </div>
@@ -217,4 +245,4 @@ function AddItem() {
   );
 }
 
-export default AddItem;
+export default EditItem;
