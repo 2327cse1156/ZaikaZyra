@@ -12,8 +12,10 @@ import { useState } from "react";
 import { setUserData } from "../redux/userSlice";
 import axios from "axios";
 import { serverUrl } from "../App";
+import { useNavigate } from "react-router-dom";
 
 function Nav() {
+  const navigate = useNavigate();
   const [showInfo, setShowInfo] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -91,7 +93,7 @@ function Nav() {
           {role === "owner" && (
             <>
               {/* Always visible Add Food button */}
-              <button className="flex items-center gap-2 bg-green-600 hover:bg-green-700 transition text-white px-4 py-2 rounded-full shadow-md">
+              <button className="flex items-center gap-2 bg-green-600 hover:bg-green-700 transition text-white px-4 py-2 rounded-full shadow-md" onClick={() => navigate("/add-item")}>
                 <FaPlus size={16} />
                 <span>Add Food Item</span>
               </button>
@@ -188,7 +190,7 @@ function Nav() {
               {/* Always visible Add Food button */}
               <button
                 className="w-full flex items-center gap-2 justify-center bg-green-600 hover:bg-green-700 transition text-white px-4 py-2 rounded-lg mb-3 shadow"
-                onClick={() => console.log("Add Food clicked")}
+                onClick={() => navigate("/add-item")}
               >
                 <FaPlus size={16} />
                 <span>Add Food</span>

@@ -10,6 +10,7 @@ import useGetMyShop from "./hooks/useGetMyShop";
 import CreateEditShop from "./pages/CreateEditShop";
 import AddItem from "./pages/AddItem";
 import EditItem from "./pages/EditItem";
+import useGetShopByCity from "./hooks/useGetShopByCity";
 
 export const serverUrl = "http://localhost:5000";
 
@@ -19,6 +20,7 @@ function App() {
   useGetCurrentUser();
   useGetCity();
   useGetMyShop();
+  useGetShopByCity();
 
   return (
     <Routes>

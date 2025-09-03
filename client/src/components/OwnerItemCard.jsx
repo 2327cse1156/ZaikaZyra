@@ -1,10 +1,23 @@
+import axios from "axios";
 import { FaPencilAlt } from "react-icons/fa";
 import { FaTrashAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { serverUrl } from "../App";
+import { setMyShopData } from "../redux/ownerSlice";
+import { useDispatch } from "react-redux";
 function OwnerItemCard({ data }) {
   console.log(data);
-
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const handleDelete = async () =>{
+    try {
+      const result = await axios.get(`${serverUrl}/api/item/delete/${data._id}`,{withCredentials:true})
+      dispatch(setMyShopData(result.data));
+    } catch (error) {
+     console.log(error);
+      
+    }
+  }
   return (
     <div className="flex flex-col bg-white/80 backdrop-blur-md border border-white/40 shadow-md overflow-hidden rounded-2xl animate-fadeIn p-4 md:p-6 hover:shadow-lg transition">
       <div className="w-full h-40 sm:h-44 md:h-48 overflow-hidden">
@@ -33,7 +46,7 @@ function OwnerItemCard({ data }) {
             >
               <FaPencilAlt size={16} className="text-blue-500" />
             </button>
-            <button className="p-2 rounded-full hover:bg-gray-100 transition-transform hover:scale-110 active:scale-95">
+            <button onClick={handleDelete} className="p-2 rounded-full hover:bg-gray-100 transition-transform hover:scale-110 active:scale-95">
               <FaTrashAlt size={16} className="text-red-500" />
             </button>
           </div>

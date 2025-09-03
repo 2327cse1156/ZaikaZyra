@@ -18,7 +18,7 @@ function CreateEditShop() {
   const [shopAddress, setShopAddress] = useState(myShopData?.address || currentAddress || "");
   const [frontendImage, setFrontendImage] = useState(myShopData?.image || null);
   const [backendImage, setBackendImage] = useState(null);
-
+  const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
 
   const handleImage = (e) => {
@@ -29,6 +29,7 @@ function CreateEditShop() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const formData = new FormData();
       formData.append("name", name);
@@ -49,8 +50,11 @@ function CreateEditShop() {
         throw new Error("Failed to save shop");
       }
       dispatch(setMyShopData(result.data));
+      setLoading(false);
+      navigate("/");
     } catch (error) {
       console.error(error);
+      setLoading(false);
     }
   };
 
@@ -167,8 +171,9 @@ function CreateEditShop() {
           <button
             type="submit"
             className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 rounded-full shadow-lg transition"
+          disabled={loading}
           >
-            💾 Save
+            {loading ? "Saving..." : "💾 Save"}
           </button>
         </form>
       </div>

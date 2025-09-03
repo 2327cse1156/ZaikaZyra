@@ -2,8 +2,7 @@
 import axios from "axios";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { setCity } from "../redux/userSlice";
-import { setCurrentState, setCurrentAddress } from "../redux/userSlice";
+import { setCity, setCurrentState, setCurrentAddress } from "../redux/userSlice";
 
 function useGetCity() {
   const dispatch = useDispatch();
@@ -12,39 +11,42 @@ function useGetCity() {
   useEffect(() => {
     const fetchCity = async (latitude, longitude) => {
       try {
-        const result = await axios.get(
+        const { data } = await axios.get(
           `https://api.geoapify.com/v1/geocode/reverse?lat=${latitude}&lon=${longitude}&format=json&apiKey=${apiKey}`
         );
+
+        const location = data?.results?.[0] || {};
+
+        // ✅ Prioritize smaller areas before falling back
         const city =
-          result?.data?.results?.[0]?.city ||
-          result?.town ||
-          result?.village ||
-          result?.municipality ||
-          result?.county ||
-          result?.state_district ||
-          result?.state ||
-          result?.data?.results?.[0]?.country ||
+          location.city ||
+          location.town ||
+          location.village ||
+          location.municipality ||
+          location.suburb || // extra layer, often available
+          location.county ||
+          location.state_district ||
           "Unknown";
+
+        const state = location.state || "Unknown";
+        const address =
+          location.formatted ||
+          location.address_line2 ||
+          location.address_line1 ||
+          "Unknown";
+
+        // Dispatch to Redux
         dispatch(setCity(city));
-        dispatch(
-          setCurrentState(result?.data?.results?.[0]?.state || "Unknown")
-        );
-        dispatch(
-          setCurrentAddress(
-            result?.formatted ||
-            result?.data?.results?.[0]?.address_line2 ||
-              result?.data?.results?.[0]?.address_line1 ||
-              "Unknown"
-          )
-        );
+        dispatch(setCurrentState(state));
+        dispatch(setCurrentAddress(address));
+
+        // Debug logs
         console.log("City:", city);
-        console.log("State:", result?.data?.results?.[0]?.state || "Unknown");
-        console.log(
-          "Address:",
-          result?.data?.results?.[0]?.formatted || "Unknown"
-        );
+        console.log("State:", state);
+        console.log("Address:", address);
       } catch (err) {
         console.error("Error fetching city:", err);
+        dispatch(setCity("Unknown"));
       }
     };
 

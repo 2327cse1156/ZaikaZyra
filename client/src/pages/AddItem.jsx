@@ -17,17 +17,17 @@ function AddItem() {
   const [category, setCategory] = useState("");
   const [foodType, setFoodType] = useState("Veg");
   const categories = [
-        "Snacks",
-        "Main Course",
-        "Desserts",
-        "Pizza",
-        "Burgers",
-        "Sandwiches",
-        "South Indian",
-        "North Indian",
-        "Chinese",
-        "Fast Food",
-        "Others",
+    "Snacks",
+    "Main Course",
+    "Desserts",
+    "Pizza",
+    "Burgers",
+    "Sandwiches",
+    "South Indian",
+    "North Indian",
+    "Chinese",
+    "Fast Food",
+    "Others",
   ];
   const dispatch = useDispatch();
 
@@ -37,8 +37,11 @@ function AddItem() {
     setFrontendImage(URL.createObjectURL(file));
   };
 
+  const [loading, setLoading] = useState(false);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const formData = new FormData();
       formData.append("name", name);
@@ -58,12 +61,15 @@ function AddItem() {
         }
       );
 
-      if (result.status !== 200) {
-        throw new Error("Failed to save shop");
+      if (![200, 201].includes(result.status)) {
+        throw new Error("Failed to save item");
       }
       dispatch(setMyShopData(result.data));
+      setLoading(false);
+      navigate("/");
     } catch (error) {
       console.error(error);
+      setLoading(false);
     }
   };
 
@@ -195,12 +201,8 @@ function AddItem() {
               required
               className="w-full px-4 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 outline-none"
             >
-              <option value="Veg">
-                Veg
-              </option>
-              <option value="Non-Veg">
-                Non-Veg
-              </option>
+              <option value="Veg">Veg</option>
+              <option value="Non-Veg">Non-Veg</option>
             </select>
           </div>
 
@@ -208,8 +210,9 @@ function AddItem() {
           <button
             type="submit"
             className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 rounded-full shadow-lg transition"
+            disabled={loading}
           >
-            💾 Save
+            {loading ? "Saving..." : "💾 Save"}
           </button>
         </form>
       </div>
