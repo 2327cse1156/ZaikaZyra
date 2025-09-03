@@ -6,15 +6,17 @@ import { FaArrowRight } from "react-icons/fa";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import useGetCity from "../hooks/useGetCity";
+import { useRef } from "react";
 
 function UserDashboard() {
-
-  const {city} = useSelector(state=>state.user)
+  const { city, shopInMyCity } = useSelector((state) => state.user);
   useGetCity();
   const cateScroll = React.useRef();
+  const shopScroll = useRef();
   const [showLeftCateRef, setShowLeftCateRef] = useState(false);
-
   const [showRightCateRef, setShowRightCateRef] = useState(false);
+  const [showLeftShopButton, setShowLeftShopButton] = useState(false);
+  const [showRightShopButton, setShowRightShopButton] = useState(false);
 
   const scrollHandler = (ref, direction) => {
     if (ref.current) {
@@ -37,16 +39,23 @@ function UserDashboard() {
   };
 
   useEffect(() => {
-    if (cateScroll.current) {
-      updateButton(cateScroll, setShowLeftCateRef, setShowRightCateRef);
-      cateScroll.current.addEventListener("scroll", () => {
+    if (cateScroll.current && shopScroll.current) {
+      const handleCateScroll = () =>
         updateButton(cateScroll, setShowLeftCateRef, setShowRightCateRef);
-      });
-    }
+      const handleShopScroll = () =>
+        updateButton(shopScroll, setShowLeftShopButton, setShowRightShopButton);
 
-    return ()=>cateScroll.current.removeEventListener("scroll",()=>{
-      updateButton(cateScroll,setShowLeftCateRef,setShowRightCateRef)
-    })
+      handleCateScroll();
+      handleShopScroll();
+
+      cateScroll.current.addEventListener("scroll", handleCateScroll);
+      shopScroll.current.addEventListener("scroll", handleShopScroll);
+
+      return () => {
+        cateScroll.current?.removeEventListener("scroll", handleCateScroll);
+        shopScroll.current?.removeEventListener("scroll", handleShopScroll);
+      };
+    }
   }, [categories]);
 
   return (
@@ -76,7 +85,11 @@ function UserDashboard() {
             className="flex gap-4 sm:gap-6 overflow-x-auto scrollbar-hide px-4 sm:px-8 py-4 scroll-smooth"
           >
             {categories.map((category, index) => (
-              <CategoryCard key={index} data={category} />
+              <CategoryCard
+                key={index}
+                name={category.category}
+                image={category.image}
+              />
             ))}
           </div>
           {showRightCateRef && (
@@ -93,29 +106,31 @@ function UserDashboard() {
       </div>
 
       <div className="px-6 sm:px-10 pb-10">
-        <h1 className="text-xl font-semibold text-gray-800">🏪 Best Shop in {city || "your area"}</h1>
-           <div className="relative flex items-center">
-          {showLeftCateRef && (
+        <h1 className="text-xl font-semibold text-gray-800">
+          🏪 Best Shop in {city || "your area"}
+        </h1>
+        <div className="relative flex items-center">
+          {showLeftShopButton && (
             <button
               className="absolute left-0 z-20 bg-white shadow-md rounded-full p-3 hover:bg-gray-100 transition-transform hover:scale-110 active:scale-95"
-              onClick={() => scrollHandler(cateScroll, "left")}
+              onClick={() => scrollHandler(shopScroll, "left")}
             >
               <FaArrowLeft className="text-gray-600" />
             </button>
           )}
 
           <div
-            ref={cateScroll}
+            ref={shopScroll}
             className="flex gap-4 sm:gap-6 overflow-x-auto scrollbar-hide px-4 sm:px-8 py-4 scroll-smooth"
           >
-            {categories.map((category, index) => (
-              <CategoryCard key={index} data={category} />
+            {shopInMyCity?.map((shop, index) => (
+              <CategoryCard name={shop.name} image={shop.image} key={index} />
             ))}
           </div>
-          {showRightCateRef && (
+          {showRightShopButton && (
             <button
               className="absolute right-0 z-20 bg-white shadow-md rounded-full p-3 hover:bg-gray-100 transition-transform hover:scale-110 active:scale-95"
-              onClick={() => scrollHandler(cateScroll, "right")}
+              onClick={() => scrollHandler(shopScroll, "right")}
             >
               <FaArrowRight className="text-gray-600" />
             </button>
@@ -135,6 +150,17 @@ function UserDashboard() {
 
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        @keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fadeIn { animation: fadeIn 1s ease-in forwards; }
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-slideUp { animation: slideUp 0.8s ease-out forwards; }
       `}</style>
     </div>
   );
