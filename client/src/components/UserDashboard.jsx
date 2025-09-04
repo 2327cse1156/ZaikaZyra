@@ -7,17 +7,22 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import useGetCity from "../hooks/useGetCity";
 import { useRef } from "react";
+import FoodCard from "./FoodCard";
+import useGetItemsByCity from "../hooks/useGetItemsByCity";
 
 function UserDashboard() {
-  const { city, shopInMyCity } = useSelector((state) => state.user);
+
+  const { city, shopInMyCity,itemsInMyCity } = useSelector((state) => state.user);
   useGetCity();
+  useGetItemsByCity();
   const cateScroll = React.useRef();
   const shopScroll = useRef();
   const [showLeftCateRef, setShowLeftCateRef] = useState(false);
   const [showRightCateRef, setShowRightCateRef] = useState(false);
   const [showLeftShopButton, setShowLeftShopButton] = useState(false);
   const [showRightShopButton, setShowRightShopButton] = useState(false);
-
+  
+  
   const scrollHandler = (ref, direction) => {
     if (ref.current) {
       ref.current.scrollBy({
@@ -57,7 +62,7 @@ function UserDashboard() {
       };
     }
   }, [categories]);
-
+console.log(itemsInMyCity);
   return (
     <div className="min-h-screen relative bg-gradient-to-br from-gray-50 via-orange-50 to-green-100 overflow-hidden">
       {/* Navbar */}
@@ -137,6 +142,18 @@ function UserDashboard() {
           )}
         </div>
       </div>
+
+      <div className="px-6 sm:px-10 pb-10">
+        <h1 className="text-xl font-semibold text-gray-800 mb-4">🍴Suggested Food Items</h1>
+        <div className="relative flex items-center">
+         <div className="flex gap-4 overflow-x-auto scrollbar-hide px-4 sm:px-8 py-4 scroll-smooth">
+           {itemsInMyCity?.map((item,index)=>(
+           <div className="min-w-[180px] sm:min-w-[220px] bg-white rounded-2xl shadow-md hover:shadow-xl  transform hover:scale-105 transition duration-300 animate-fadeIn"> <FoodCard key={index} data={item}/></div>
+          ))}
+         </div>
+        </div>
+      </div>
+      
       <style>{`
         @keyframes bounce-slow {
           0%, 100% { transform: translateY(0px); }

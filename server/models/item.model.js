@@ -28,7 +28,12 @@ const itemSchema = new mongoose.Schema(
       required: true,
     },
     shop: { type: mongoose.Schema.Types.ObjectId, ref: "Shop", required: true },
+    rating:{
+      average:{type:Number,default:0},
+      count:{type:Number,default:0}
+    }
   },
+
   { timestamps: true }
 );
 
