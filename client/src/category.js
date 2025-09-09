@@ -9,6 +9,7 @@ import image8 from "./assets/north india.avif"
 import image9 from "./assets/chinese.avif"
 import image10 from "./assets/fast food.avif"
 import image11 from "./assets/others.avif"
+
 export const categories = [
   {
     category: "Snacks",
