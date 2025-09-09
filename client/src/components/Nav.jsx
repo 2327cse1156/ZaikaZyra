@@ -22,6 +22,7 @@ function Nav() {
   const dispatch = useDispatch();
   const userData = useSelector((state) => state.user.userData);
   const city = useSelector((state) => state.user.city) || "Unknown";
+  const {cartItems}= useSelector(state=>state.user)
 
   const handleLogOut = async () => {
     try {
@@ -78,13 +79,13 @@ function Nav() {
               </div>
 
               {/* Cart */}
-              <div className="relative cursor-pointer">
+              <div onClick={()=>navigate("/cart")} className="relative cursor-pointer">
                 <FaShoppingCart
                   size={22}
                   className="text-gray-600 hover:text-green-600 transition"
                 />
                 <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-1.5 rounded-full shadow">
-                  0
+                  {cartItems.length}
                 </span>
               </div>
             </>
@@ -174,9 +175,9 @@ function Nav() {
                   className="bg-transparent outline-none text-sm text-gray-700 w-full"
                 />
               </div>
-              <div className="flex items-center gap-3 mb-3 cursor-pointer hover:bg-gray-100 rounded px-3 py-2">
+              <div onClick={()=>navigate("/cart")} className="flex items-center gap-3 mb-3 cursor-pointer hover:bg-gray-100 rounded px-3 py-2">
                 <FaShoppingCart />
-                <span>Cart</span>
+                <span>Cart {cartItems.length}</span>
               </div>
               <div className="mb-3 cursor-pointer hover:bg-gray-100 rounded px-3 py-2">
                 My Orders

@@ -148,7 +148,7 @@ console.log(itemsInMyCity);
         <div className="relative flex items-center">
          <div className="flex gap-4 overflow-x-auto scrollbar-hide px-4 sm:px-8 py-4 scroll-smooth">
            {itemsInMyCity?.map((item,index)=>(
-           <div className="min-w-[180px] sm:min-w-[220px] bg-white rounded-2xl shadow-md hover:shadow-xl  transform hover:scale-105 transition duration-300 animate-fadeIn"> <FoodCard key={index} data={item}/></div>
+           <div key={item.id||item._id||index} className="min-w-[180px] sm:min-w-[220px] bg-white rounded-2xl shadow-md hover:shadow-xl  transform hover:scale-105 transition duration-300 animate-fadeIn"> <FoodCard  data={item}/></div>
           ))}
          </div>
         </div>

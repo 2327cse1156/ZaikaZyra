@@ -8,9 +8,13 @@ import {
   FaStar,
   FaDrumstickBite,
 } from "react-icons/fa";
+import { useDispatch, useSelector } from "react-redux";
+import { addToCart } from "../redux/userSlice";
 
 function FoodCard({ data }) {
   const [quantity, setQuantity] = useState(0);
+  const dispatch = useDispatch();
+  const { cartItems } = useSelector((state) => state.user);
 
   const renderStars = (rating) => {
     const stars = [];
@@ -29,8 +33,7 @@ function FoodCard({ data }) {
   };
 
   const handleIncrease = () => setQuantity((prev) => prev + 1);
-  const handleDecrease = () =>
-    setQuantity((prev) => (prev > 0 ? prev - 1 : 0));
+  const handleDecrease = () => setQuantity((prev) => (prev > 0 ? prev - 1 : 0));
 
   return (
     <div className="flex-shrink-0 w-40 sm:w-48 md:w-56 bg-white/90 backdrop-blur-md border border-gray-200 shadow-md rounded-2xl hover:-translate-y-1 transition-all duration-300 animate-fadeIn">
@@ -92,7 +95,26 @@ function FoodCard({ data }) {
         </div>
 
         {/* Cart Button */}
-        <button className="flex items-center gap-1 px-2 py-1 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm transition">
+        <button
+          className={`${
+            cartItems.some((i) => i.id == data._id)
+              ? "bg-amber-600"
+              : " bg-green-500 hover:bg-green-600"
+          } flex items-center gap-1 px-2 py-1 text-white rounded-lg text-sm transition`}
+          onClick={() =>
+            quantity>0?dispatch(
+              addToCart({
+                id: data._id,
+                name: data.name,
+                price: data.price,
+                image: data.image,
+                shop: data.shop,
+                quantity,
+                foodType: data.foodType,
+              })
+            ):null
+          }
+        >
           <FaShoppingCart />
           <span className="hidden sm:inline">Add</span>
         </button>
