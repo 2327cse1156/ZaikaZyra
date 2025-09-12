@@ -48,9 +48,40 @@ function CheckOut() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { location, address } = useSelector((state) => state.map);
-
+  const { cartItems, totalAmount } = useSelector((state) => state.user);
   const [paymentMethod, setPaymentMethod] = useState("cod");
-  const [addressInput, setAddressInput] = useState("");
+  const [addressInput, setAddressInput] = useState(address || "");
+
+  // Promo Code
+  const [promoCode, setPromoCode] = useState("");
+  const [discount, setDiscount] = useState(0);
+  const [promoMessage, setPromoMessage] = useState("");
+
+  // ✅ Apply promo code inline without alert
+  const applyPromo = () => {
+    const code = promoCode.trim().toLowerCase();
+    if (code === "save50") {
+      setDiscount(50);
+      setPromoMessage("Promo code applied: ₹50 off!");
+    } else if (!code) {
+      setDiscount(0);
+      setPromoMessage("Please enter a promo code.");
+    } else {
+      setDiscount(0);
+      setPromoMessage("Invalid promo code.");
+    }
+  };
+
+  // ✅ Dynamic Delivery Fee
+  const getDeliveryFee = (amount) => {
+    if (amount >= 500) return 0;
+    if (amount >= 400) return 20;
+    if (amount >= 200) return 30;
+    return 40;
+  };
+
+  const deliveryFee = getDeliveryFee(totalAmount);
+  const AmountwithDeliveryFee = totalAmount - discount + deliveryFee;
 
   // ✅ Reverse Geocoding
   const getAddressByLatLng = async (lat, lng) => {
@@ -60,12 +91,11 @@ function CheckOut() {
         `https://api.geoapify.com/v1/geocode/reverse?lat=${lat}&lon=${lng}&format=json&apiKey=${apiKey}`
       );
       const loc = data?.results?.[0] || {};
-
       const fetchedAddress =
         loc.formatted || loc.address_line2 || loc.address_line1 || "Unknown";
 
       dispatch(setAddress(fetchedAddress));
-      setAddressInput(fetchedAddress); // ✅ sync input only after reverse geocoding
+      setAddressInput(fetchedAddress); // ✅ sync input after reverse geocoding
     } catch (error) {
       console.log("Error fetching address:", error);
     }
@@ -85,7 +115,7 @@ function CheckOut() {
     }
   }, [location.lat, location.lon]);
 
-  // ✅ Current Location button
+  // ✅ Current Location
   const handleCurrentLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -98,15 +128,13 @@ function CheckOut() {
           console.error("Geolocation error:", err);
         }
       );
-    } else {
-      alert("Geolocation not supported in this browser.");
     }
   };
 
   // ✅ Forward Geocoding (search → lat/lon)
   const getLatLngByAddress = async () => {
     if (!addressInput.trim()) {
-      alert("Please enter an address.");
+      setPromoMessage("Please enter an address.");
       return;
     }
 
@@ -122,13 +150,13 @@ function CheckOut() {
       if (loc) {
         dispatch(setLocation({ lat: loc.lat, lon: loc.lon }));
         dispatch(setAddress(loc.formatted || addressInput));
-        setAddressInput(loc.formatted || addressInput); // ✅ only update after success
+        setAddressInput(loc.formatted || addressInput);
       } else {
-        alert("No results found for the given address.");
+        setPromoMessage("No results found for the given address.");
       }
     } catch (error) {
       console.error("Error searching address:", error);
-      alert("Something went wrong while searching address.");
+      setPromoMessage("Something went wrong while searching address.");
     }
   };
 
@@ -159,7 +187,6 @@ function CheckOut() {
 
       {/* Checkout Card */}
       <div className="relative w-full max-w-3xl bg-white/90 backdrop-blur-lg border border-white/40 shadow-xl rounded-2xl p-8">
-
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <button
@@ -187,7 +214,7 @@ function CheckOut() {
               value={addressInput || ""}
               placeholder="Enter your Delivery Address..."
               className="flex-1 px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-              onChange={(e) => setAddressInput(e.target.value)} // ✅ user always controls input
+              onChange={(e) => setAddressInput(e.target.value)}
             />
             <button
               onClick={getLatLngByAddress}
@@ -227,14 +254,7 @@ function CheckOut() {
           </div>
         </section>
 
-        {/* Place Order
-        <div className="mt-8 flex justify-end">
-          <button className="bg-green-600 text-white px-6 py-3 rounded-xl shadow-md hover:bg-green-700 hover:scale-105 transition-all duration-300">
-            Confirm Order
-          </button>
-        </div> */}
-
-        {/* payment section */}
+        {/* Payment Section */}
         <section className="mt-6">
           <h2 className="text-lg font-semibold mb-3">Payment Method</h2>
           <div className="grid gap-4">
@@ -257,13 +277,12 @@ function CheckOut() {
               </div>
             </div>
             <div
-              className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all duration-200
-        ${
-          paymentMethod === "online"
-            ? "border-[#ff4d2d] bg-orange-50 shadow-md"
-            : "border-gray-200 hover:border-gray-300"
-        }`}
-              onClick={() => setPaymentMethod("online")} 
+              className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all duration-200 ${
+                paymentMethod === "online"
+                  ? "border-[#ff4d2d] bg-orange-50 shadow-md"
+                  : "border-gray-200 hover:border-gray-300"
+              }`}
+              onClick={() => setPaymentMethod("online")}
             >
               <div className="flex flex-col text-[#ff4d2d] text-xl">
                 <FaMobileButton />
@@ -277,12 +296,86 @@ function CheckOut() {
           </div>
         </section>
 
-        {/* order summary */}
-        <section>
-          <h2>Order Summary</h2>
-          
+        {/* Order Summary */}
+        <section className="mt-8">
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">
+            Order Summary
+          </h2>
+
+          <div className="bg-white/90 backdrop-blur-md border border-gray-200 rounded-xl p-6 shadow-md space-y-4">
+            {cartItems.map((item, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-between text-gray-700"
+              >
+                <span className="text-sm sm:text-base font-medium">
+                  {item.name} x {item.quantity}
+                </span>
+                <span className="text-sm sm:text-base font-semibold">
+                  ₹{item.price * item.quantity}
+                </span>
+              </div>
+            ))}
+            <hr className="border-gray-200" />
+            <div className="flex justify-between items-center text-gray-700">
+              <span className="text-sm sm:text-base">Subtotal</span>
+              <span className="font-medium">₹{totalAmount}</span>
+            </div>
+            <div className="flex justify-between items-center text-gray-700">
+              <span className="text-sm sm:text-base">Delivery Fee</span>
+              <span className="font-medium text-green-600">
+                {deliveryFee === 0 ? "Free" : `₹${deliveryFee}`}
+              </span>
+            </div>
+
+            {/* Promo code */}
+            <div className="flex flex-col mt-2 gap-2">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Enter promo code"
+                  className="flex-1 px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  value={promoCode}
+                  onChange={(e) => setPromoCode(e.target.value)}
+                />
+                <button
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+                  onClick={applyPromo}
+                >
+                  Apply
+                </button>
+              </div>
+              {promoMessage && (
+                <p
+                  className={`text-sm ${
+                    discount > 0 ? "text-green-600" : "text-red-500"
+                  }`}
+                >
+                  {promoMessage}
+                </p>
+              )}
+            </div>
+
+            {discount > 0 && (
+              <div className="flex justify-between items-center text-green-600 font-medium">
+                <span className="text-sm sm:text-base">You Saved</span>
+                <span>- ₹{discount}</span>
+              </div>
+            )}
+
+            <hr className="border-gray-200" />
+
+            <div className="flex justify-between items-center text-lg font-bold text-gray-900">
+              <span>Total</span>
+              <span>₹{AmountwithDeliveryFee}</span>
+            </div>
+          </div>
         </section>
 
+        {/* Place Order Button */}
+        <button className="mt-6 w-full bg-[#ff4d2d] text-white py-3 rounded-xl font-semibold shadow-md hover:bg-[#e63e20] transition-all duration-300">
+          {paymentMethod === "cod" ? "Place Order" : "Pay and Place Order"}
+        </button>
       </div>
     </div>
   );
