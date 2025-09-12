@@ -2,7 +2,12 @@
 import axios from "axios";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { setCity, setCurrentState, setCurrentAddress } from "../redux/userSlice";
+import {
+  setCity,
+  setCurrentState,
+  setCurrentAddress,
+} from "../redux/userSlice";
+import { setAddress, setLocation } from "../redux/mapSlice";
 
 function useGetCity() {
   const dispatch = useDispatch();
@@ -11,6 +16,9 @@ function useGetCity() {
   useEffect(() => {
     const fetchCity = async (latitude, longitude) => {
       try {
+        // Save lat/lon to Redux
+        dispatch(setLocation({ lat: latitude, lon: longitude }));
+
         const { data } = await axios.get(
           `https://api.geoapify.com/v1/geocode/reverse?lat=${latitude}&lon=${longitude}&format=json&apiKey=${apiKey}`
         );
@@ -23,12 +31,13 @@ function useGetCity() {
           location.town ||
           location.village ||
           location.municipality ||
-          location.suburb || // extra layer, often available
+          location.suburb ||
           location.county ||
           location.state_district ||
           "Unknown";
 
         const state = location.state || "Unknown";
+
         const address =
           location.formatted ||
           location.address_line2 ||
@@ -39,6 +48,7 @@ function useGetCity() {
         dispatch(setCity(city));
         dispatch(setCurrentState(state));
         dispatch(setCurrentAddress(address));
+        dispatch(setAddress(address)); // ✅ fixed here
 
         // Debug logs
         console.log("City:", city);

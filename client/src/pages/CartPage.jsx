@@ -58,7 +58,7 @@ function CartPage() {
                 <h1 className="text-lg font-semibold text-gray-700">Total Amount:</h1>
                 <span className="text-xl font-bold text-green-600">₹{totalAmount}</span>
             </div>
-            <div className="mt-6 flex justify-end"><button className="bg-green-600 text-white px-6 py-3 rounded-xl shadow-md hover:bg-green-700 hover:scale-105 transition-all duration-300">Proceed To Checkout</button></div>
+            <div className="mt-6 flex justify-end"><button onClick={()=>navigate("/checkout")} className="bg-green-600 text-white px-6 py-3 rounded-xl shadow-md hover:bg-green-700 hover:scale-105 transition-all duration-300">Proceed To Checkout</button></div>
           </>
         )}
       </div>
