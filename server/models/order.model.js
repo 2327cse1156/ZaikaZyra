@@ -1,9 +1,10 @@
 import mongoose from "mongoose";
 const shopOrderItemSchema = new mongoose.Schema({
-    items:{
+    item:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"Item"
     },
+    name:String,
     price:{
         type:Number
     },
@@ -49,7 +50,7 @@ const orderSchema = new mongoose.Schema(
     totalAmount: {
       type: Number,
     },
-    shopOrder: [shopOrderSchema],
+    shopOrders: [shopOrderSchema],
   },
   { timestamps: true }
 );
