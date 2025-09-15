@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import L from "leaflet";
 import { MdDeliveryDining } from "react-icons/md";
+import {serverUrl} from "../App"
 
 // ✅ Fix default Leaflet Marker icon issue
 delete L.Icon.Default.prototype._getIconUrl;
@@ -159,6 +160,33 @@ function CheckOut() {
       setPromoMessage("Something went wrong while searching address.");
     }
   };
+
+  const handlePlaceOrder = async()=>{
+    try {
+      const result = await axios.post(`${serverUrl}/api/order/place-order`,{
+        paymentMethod,
+        deliveryAddress:{
+          text:addressInput,
+          latitude:location.lat,
+          longitude:location.lon,
+        },
+        totalAmount,
+        cartItems
+      },{withCredentials:true})
+      console.log(result.data);
+      navigate("/order-placed", {
+  state: {
+    orderId: result.data.orderId,       // Assuming backend returns this
+    totalAmount: AmountwithDeliveryFee  // Pass actual amount charged
+  }
+});
+
+       
+    } catch (error) {
+      console.error("Order placement failed:",error)
+      
+    }
+  }
 
   const bubbleColors = ["#FBBF24", "#86EFAC", "#22C55E"];
 
@@ -373,7 +401,7 @@ function CheckOut() {
         </section>
 
         {/* Place Order Button */}
-        <button className="mt-6 w-full bg-[#ff4d2d] text-white py-3 rounded-xl font-semibold shadow-md hover:bg-[#e63e20] transition-all duration-300">
+        <button onClick={handlePlaceOrder} className="mt-6 w-full bg-[#ff4d2d] text-white py-3 rounded-xl font-semibold shadow-md hover:bg-[#e63e20] transition-all duration-300">
           {paymentMethod === "cod" ? "Place Order" : "Pay and Place Order"}
         </button>
       </div>

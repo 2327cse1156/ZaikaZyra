@@ -45,7 +45,7 @@ export const placeOrder = async (req, res) => {
           owner: shop.owner_id,
           subtotal,
           shopOrderItems: items.map((i) => ({
-            item: i._id,
+            item: i.id,
             price: i.price,
             quantity: i.quantity,
             name: i.name,
@@ -67,3 +67,25 @@ export const placeOrder = async (req, res) => {
     return res.status(500).json({ message: `Place order error ${error}` });
   }
 };
+
+export const getUserOrders = async (req, res) => {
+  try {
+    const orders = await Order.find({ user: req.userId })
+      .sort({ createdAt: -1 })
+      .populate("shopOrders.shop", "name")
+      .populate("shopOrders.owner", "name email mobile")
+      .populate("shopOrders.shopOrderItems.item","name image price")
+
+      return res.status(200).json(orders)
+  } catch (error) {
+    return res.status(500).json({message:"Get user order error"})
+  }
+};
+
+export const getOwnerOrder = async(req,res)=>{
+  try {
+    
+  } catch (error) {
+    
+  }
+}
