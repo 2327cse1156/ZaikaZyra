@@ -74,18 +74,24 @@ export const getUserOrders = async (req, res) => {
       .sort({ createdAt: -1 })
       .populate("shopOrders.shop", "name")
       .populate("shopOrders.owner", "name email mobile")
-      .populate("shopOrders.shopOrderItems.item","name image price")
+      .populate("shopOrders.shopOrderItems.item", "name image price");
 
-      return res.status(200).json(orders)
+    return res.status(200).json(orders);
   } catch (error) {
-    return res.status(500).json({message:"Get user order error"})
+    return res.status(500).json({ message: "Get user order error" });
   }
 };
 
-export const getOwnerOrder = async(req,res)=>{
+export const getOwnerOrder = async (req, res) => {
   try {
-    
+    const orders = await Order.find({ "shopOrders.owner": req.userId })
+      .sort({ createdAt: -1 })
+      .populate("shopOrders.shop", "name")
+      .populate("user")
+      .populate("shopOrders.shopOrderItems.item", "name image price");
+
+    return res.status(200).json(orders);
   } catch (error) {
-    
+    return res.status(500).json({ message: "Get user order error" });
   }
-}
+};
