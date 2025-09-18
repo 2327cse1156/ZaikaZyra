@@ -1,12 +1,15 @@
 import Order from "../models/order.model.js";
 import Shop from "../models/shop.model.js";
+import User from "../models/user.model.js";
 
 export const placeOrder = async (req, res) => {
   try {
     const { cartItems, paymentMethod, deliveryAddress, totalAmount } = req.body;
-    if (cartItems.length == 0 || !cartItems) {
+
+    if (!cartItems || cartItems.length === 0) {
       return res.status(400).json({ message: "Cart is empty" });
     }
+
     if (
       !deliveryAddress.text ||
       !deliveryAddress.latitude ||
@@ -30,9 +33,8 @@ export const placeOrder = async (req, res) => {
     const shopOrders = await Promise.all(
       Object.keys(groupItemsByShop).map(async (shopId) => {
         const shop = await Shop.findById(shopId).populate("owner");
-
         if (!shop) {
-          return res.status(400).json({ message: "Shop not found" });
+          throw new Error("Shop not found");
         }
 
         const items = groupItemsByShop[shopId];
@@ -40,10 +42,11 @@ export const placeOrder = async (req, res) => {
           (sum, i) => sum + Number(i.price) * Number(i.quantity),
           0
         );
+
         return {
           shop: shop._id,
-          owner: shop.owner_id,
-          subtotal,
+          owner: shop.owner._id, // ✅ fixed
+          subtotal,               // ✅ matches model
           shopOrderItems: items.map((i) => ({
             item: i.id,
             price: i.price,
@@ -64,34 +67,38 @@ export const placeOrder = async (req, res) => {
 
     return res.status(201).json(newOrder);
   } catch (error) {
-    return res.status(500).json({ message: `Place order error ${error}` });
+    return res
+      .status(500)
+      .json({ message: `Place order error: ${error.message}` });
   }
 };
 
-export const getUserOrders = async (req, res) => {
+export const getMyOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ user: req.userId })
-      .sort({ createdAt: -1 })
-      .populate("shopOrders.shop", "name")
-      .populate("shopOrders.owner", "name email mobile")
-      .populate("shopOrders.shopOrderItems.item", "name image price");
+    const user = await User.findById(req.userId);
 
-    return res.status(200).json(orders);
+    if (user.role === "user") {
+      const orders = await Order.find({ user: req.userId })
+        .sort({ createdAt: -1 })
+        .populate("shopOrders.shop", "name")
+        .populate("shopOrders.owner", "name email mobile")
+        .populate("shopOrders.shopOrderItems.item", "name image price");
+
+      return res.status(200).json(orders);
+    }
+
+    if (user.role === "owner") {
+      const orders = await Order.find({ user: req.userId })
+        .sort({ createdAt: -1 })
+        .populate("shopOrders.shop", "name")
+        .populate("user", "fullName email")
+        .populate("shopOrders.owner", "fullName");
+
+      return res.status(200).json(orders);
+    }
   } catch (error) {
-    return res.status(500).json({ message: "Get user order error" });
-  }
-};
-
-export const getOwnerOrder = async (req, res) => {
-  try {
-    const orders = await Order.find({ "shopOrders.owner": req.userId })
-      .sort({ createdAt: -1 })
-      .populate("shopOrders.shop", "name")
-      .populate("user")
-      .populate("shopOrders.shopOrderItems.item", "name image price");
-
-    return res.status(200).json(orders);
-  } catch (error) {
-    return res.status(500).json({ message: "Get user order error" });
+    return res
+      .status(500)
+      .json({ message: `Get user order error: ${error.message}` });
   }
 };

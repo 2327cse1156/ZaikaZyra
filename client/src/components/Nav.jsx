@@ -100,7 +100,7 @@ function Nav() {
               </button>
 
               {/* Orders */}
-              <div className="flex items-center gap-2 text-gray-700 font-medium cursor-pointer hover:text-green-600 transition">
+              <div onClick={()=>navigate("/my-orders")} className="flex items-center gap-2 text-gray-700 font-medium cursor-pointer hover:text-green-600 transition">
                 <MdReceiptLong size={20} />
                 <span>Orders</span>
                 <span className="bg-red-500 text-white text-xs font-bold px-2 rounded-full">
@@ -126,7 +126,7 @@ function Nav() {
                 {userData.fullName}
               </div>
               {role === "user" && (
-                <div className="px-4 py-2 hover:bg-gray-100 cursor-pointer rounded">
+                <div className="px-4 py-2 hover:bg-gray-100 cursor-pointer rounded" onClick={()=>navigate("/my-orders")}>
                   My Orders
                 </div>
               )}
@@ -179,7 +179,7 @@ function Nav() {
                 <FaShoppingCart />
                 <span>Cart {cartItems.length}</span>
               </div>
-              <div className="mb-3 cursor-pointer hover:bg-gray-100 rounded px-3 py-2">
+              <div onClick={()=>navigate("/my-orders")} className="mb-3 cursor-pointer hover:bg-gray-100 rounded px-3 py-2">
                 My Orders
               </div>
             </>
@@ -197,7 +197,7 @@ function Nav() {
                 <span>Add Food</span>
               </button>
 
-              <div className="flex items-center gap-2 text-gray-700 font-medium cursor-pointer hover:bg-gray-100 rounded px-3 py-2">
+              <div onClick={()=>navigate("/my-orders")} className="flex items-center gap-2 text-gray-700 font-medium cursor-pointer hover:bg-gray-100 rounded px-3 py-2">
                 <MdReceiptLong size={20} />
                 <span>Orders</span>
                 <span className="ml-auto bg-red-500 text-white text-xs font-bold px-2 rounded-full">
