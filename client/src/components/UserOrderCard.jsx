@@ -1,5 +1,11 @@
 import { useState } from "react";
-import { FaBox, FaTruck, FaCheckCircle, FaChevronDown, FaChevronUp } from "react-icons/fa";
+import {
+  FaBox,
+  FaTruck,
+  FaCheckCircle,
+  FaChevronDown,
+  FaChevronUp,
+} from "react-icons/fa";
 
 function UserOrderCard({ data }) {
   const [expanded, setExpanded] = useState(false);
@@ -63,7 +69,10 @@ function UserOrderCard({ data }) {
           >
             {data.shopOrders[0]?.status}
           </span>
-          <p className="font-semibold">₹{data.totalAmount}</p>
+          {/* Show Total in header */}
+          <p className="font-semibold text-gray-800">
+            Total: ₹{data.totalAmount}
+          </p>
           {expanded ? <FaChevronUp /> : <FaChevronDown />}
         </div>
       </div>
@@ -138,6 +147,13 @@ function UserOrderCard({ data }) {
               </div>
             </div>
           ))}
+
+          {/* Grand Total */}
+          <div className="flex justify-end mt-6 border-t pt-4">
+            <p className="text-lg font-semibold text-gray-800">
+              Total: ₹{data.totalAmount}
+            </p>
+          </div>
 
           {/* Track Order Button */}
           <div className="flex justify-end mt-4">

@@ -11,6 +11,7 @@ import axios from "axios";
 import L from "leaflet";
 import { MdDeliveryDining } from "react-icons/md";
 import {serverUrl} from "../App"
+import { addMyOrder } from "../redux/userSlice";
 
 // ✅ Fix default Leaflet Marker icon issue
 delete L.Icon.Default.prototype._getIconUrl;
@@ -173,7 +174,7 @@ function CheckOut() {
         totalAmount,
         cartItems
       },{withCredentials:true})
-      console.log(result.data);
+      dispatch(addMyOrder(result.data))
       navigate("/order-placed", {
   state: {
     orderId: result.data.orderId,       // Assuming backend returns this

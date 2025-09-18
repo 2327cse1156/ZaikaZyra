@@ -1,11 +1,151 @@
-import React from 'react'
+import React, { useState } from "react";
+import { MdPhone } from "react-icons/md";
+import { FaBox, FaConciergeBell, FaTruck, FaCheckCircle, FaChevronDown, FaChevronUp } from "react-icons/fa";
 
-function OwnerOrderCard({data}) {
+function OwnerOrderCard({ data }) {
+  const [expanded, setExpanded] = useState(false);
+
+  const steps = [
+    { label: "Pending", icon: <FaBox /> },
+    { label: "Preparing", icon: <FaConciergeBell /> },
+    { label: "Out for Delivery", icon: <FaTruck /> },
+    { label: "Delivered", icon: <FaCheckCircle /> },
+  ];
+
+  const getStatusColor = (status) => {
+    switch (status?.toLowerCase()) {
+      case "pending": return "bg-yellow-100 text-yellow-800";
+      case "preparing": return "bg-blue-100 text-blue-800";
+      case "out for delivery": return "bg-indigo-100 text-indigo-800";
+      case "delivered": return "bg-green-100 text-green-800";
+      default: return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  // Determine current step index
+  const currentStep = steps.findIndex(
+    (s) => s.label.toLowerCase() === data.shopOrders.status.toLowerCase()
+  ) + 1;
+  const progressPercent = ((currentStep - 1) / (steps.length - 1)) * 100;
+
   return (
-    <div>
-      <h2>{data.user.fullName}</h2>
+    <div className="relative w-full bg-white/80 backdrop-blur-md border border-gray-100 shadow-xl rounded-2xl p-6 animate-fadeIn">
+      {/* Header */}
+      <div
+        className="flex justify-between items-center cursor-pointer"
+        onClick={() => setExpanded((prev) => !prev)}
+      >
+        <div>
+          <h2 className="text-lg font-semibold text-gray-800">{data.user.fullName}</h2>
+          <p className="text-sm text-gray-500">{data.user.email}</p>
+          <p className="flex items-center gap-2 text-sm text-gray-500">
+            <MdPhone /> {data.user.mobile}
+          </p>
+        </div>
+        <div className="flex items-center gap-4">
+          <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(data.shopOrders.status)}`}>
+            {data.shopOrders.status}
+          </span>
+          {expanded ? <FaChevronUp /> : <FaChevronDown />}
+        </div>
+      </div>
+
+      {/* Expanded Details */}
+      {expanded && (
+        <div className="mt-6 space-y-6">
+          {/* Progress Tracker */}
+          <div className="relative flex justify-between items-center mb-6">
+            {steps.map((step, index) => {
+              const isCompleted = currentStep >= index + 1;
+              return (
+                <div key={step.label} className="flex flex-col items-center w-1/4 relative z-10">
+                  <div className={`w-10 h-10 flex items-center justify-center rounded-full border-2 text-lg transition-all ${
+                    isCompleted
+                      ? "bg-orange-500 border-orange-500 text-white animate-bounce"
+                      : "bg-white border-gray-300 text-gray-400"
+                  }`}>
+                    {step.icon}
+                  </div>
+                  <p className="text-xs mt-2 text-gray-600 text-center">{step.label}</p>
+                </div>
+              );
+            })}
+            <div className="absolute top-5 left-0 right-0 h-1 bg-gray-200 rounded">
+              <div
+                className="h-1 bg-orange-500 rounded transition-all duration-700"
+                style={{ width: `${progressPercent}%` }}
+              ></div>
+            </div>
+          </div>
+
+          {/* Delivery Address */}
+          <div className="border border-gray-100 rounded-xl p-4">
+            <p className="font-medium text-gray-700 mb-2">Delivery Address</p>
+            <p className="text-sm text-gray-500">{data?.deliveryAddress?.text}</p>
+            <p className="text-sm text-gray-500">
+              Lat: {data?.deliveryAddress?.latitude}, Lon: {data?.deliveryAddress?.longitude}
+            </p>
+          </div>
+
+          {/* Shop Order Items */}
+          <div className="border border-gray-100 rounded-xl p-4">
+            <p className="font-medium text-gray-700 mb-3">Items</p>
+            <div className="space-y-3">
+              {data.shopOrders.shopOrderItems.map((item) => (
+                <div key={item._id} className="flex items-center gap-4 border-b pb-2">
+                  <img
+                    src={item.item.image}
+                    alt={item.item.name}
+                    className="w-16 h-16 object-cover rounded-lg"
+                  />
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-800">{item.item.name}</p>
+                    <p className="text-sm text-gray-500">
+                      Qty: {item.quantity} × ₹{item.price}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Status Update */}
+          <div className="flex justify-between items-center border border-gray-100 rounded-xl p-4">
+            <span className="font-medium text-gray-700">
+              Status: <span className="text-gray-800">{data.shopOrders.status}</span>
+            </span>
+            <select
+              value={data.shopOrders.status}
+              className="px-3 py-1 border border-gray-300 rounded-lg text-sm"
+            >
+              <option value="pending">Pending</option>
+              <option value="preparing">Preparing</option>
+              <option value="out for delivery">Out for Delivery</option>
+              <option value="delivered">Delivered</option>
+            </select>
+          </div>
+
+          {/* Total */}
+          <div className="flex justify-end text-lg font-semibold text-gray-800 border-t pt-4">
+            Total: ₹{data.shopOrders.subtotal}
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-5px); }
+        }
+        .animate-fadeIn { animation: fadeIn 0.6s ease-out forwards; }
+        .animate-bounce { animation: bounce 1.2s ease-in-out infinite; }
+      `}</style>
     </div>
-  )
+  );
 }
 
-export default OwnerOrderCard
+export default OwnerOrderCard;
