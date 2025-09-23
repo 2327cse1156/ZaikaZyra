@@ -215,17 +215,18 @@ export const updateOrderStatus = async (req, res) => {
     }
     await shopOrder.save();
     await order.save();
+        const updatedShopOrder = order.shopOrders.find((o) => o.shop == shopId);
     await order.populate("shopOrders.shop", "name");
     await order.populate(
       "shopOrders.assignedDeliveryBoy",
       "fullName email mobile"
     );
-    const updatedShopOrder = order.shopOrders.find((o) => o.shop == shopId);
+
     return res.status(200).json({
       shopOrder: updatedShopOrder,
-      assignedDeliveryBoy: updatedShopOrder.assignedDeliveryBoy,
+      assignedDeliveryBoy: updatedShopOrder?.assignedDeliveryBoy,
       availableBoys: deliveryBoyPayload,
-      assignment: updatedShopOrder.assignment._id,
+      assignment: updatedShopOrder?.assignment._id,
     });
   } catch (error) {
     console.error(error); // for debugging
