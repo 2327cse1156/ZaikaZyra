@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { IoIosArrowRoundBack } from "react-icons/io";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import UserOrderCard from "../components/userOrderCard";
+import UserOrderCard from "../components/UserOrderCard";
 import OwnerOrderCard from "../components/ownerOrderCard";
 
 function MyOrders() {
@@ -19,11 +19,19 @@ function MyOrders() {
     { label: "Delivered", value: "delivered" },
   ];
 
-  const filteredOrders = myOrders?.filter((order) =>
-    activeStatus === "all"
-      ? true
-      : order.shopOrders.some((s) => s.status === activeStatus)
-  );
+  // Filter orders for both user and owner roles
+  const filteredOrders = myOrders?.filter((order) => {
+    if (activeStatus === "all") return true;
+
+    if (Array.isArray(order.shopOrders)) {
+      return order.shopOrders.some(
+        (s) => s.status.toLowerCase() === activeStatus
+      );
+    } else if (order.shopOrders && typeof order.shopOrders === "object") {
+      return order.shopOrders.status.toLowerCase() === activeStatus;
+    }
+    return false;
+  });
 
   const bubbleColors = ["#FBBF24", "#86EFAC", "#22C55E"];
 
@@ -49,7 +57,7 @@ function MyOrders() {
 
       <div className="max-w-5xl mx-auto relative z-10">
         {/* Top Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between mb-10 gap-4">
+        <div className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
           <button
             className="flex items-center text-gray-700 hover:text-green-600 transition duration-300"
             onClick={() => navigate("/")}
@@ -64,7 +72,7 @@ function MyOrders() {
         </div>
 
         {/* Status Tabs */}
-        <div className="sticky top-0 z-10 bg-[#FFF7ED] py-3 mb-8 shadow-sm rounded-xl flex flex-wrap justify-center sm:justify-start gap-3">
+        <div className="sticky top-0 z-10 bg-[#FFF7ED] py-3 mb-6 shadow-sm rounded-xl flex flex-wrap justify-center sm:justify-start gap-3">
           {statusTabs.map((tab) => (
             <button
               key={tab.value}
@@ -84,7 +92,7 @@ function MyOrders() {
         <div className="space-y-6">
           {filteredOrders?.length > 0 ? (
             filteredOrders.map((order) =>
-              userData.role === "user" ? (
+              userData?.role === "user" ? (
                 <UserOrderCard key={order._id} data={order} />
               ) : (
                 <OwnerOrderCard key={order._id} data={order} />

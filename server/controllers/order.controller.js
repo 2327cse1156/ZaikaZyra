@@ -75,8 +75,11 @@ export const placeOrder = async (req, res) => {
       shopOrders,
     });
 
-    await newOrder.populate("shopOrders.shopOrderItems.item","name image price");
-    await newOrder.populate("shopOrders.shop","name");
+    await newOrder.populate(
+      "shopOrders.shopOrderItems.item",
+      "name image price"
+    );
+    await newOrder.populate("shopOrders.shop", "name");
 
     return res.status(201).json(newOrder);
   } catch (error) {
@@ -85,7 +88,6 @@ export const placeOrder = async (req, res) => {
       .json({ message: `Place order error: ${error.message}` });
   }
 };
-
 
 export const getMyOrders = async (req, res) => {
   try {
@@ -108,7 +110,7 @@ export const getMyOrders = async (req, res) => {
         .populate("user")
         .populate("shopOrders.shopOrderItems.item", "name image price");
 
-const filteredOrders = orders.map((order) => {
+      const filteredOrders = orders.map((order) => {
         const shopOrder = order.shopOrders.find(
           (o) => o.owner.toString() === req.userId
         );
@@ -129,7 +131,7 @@ const filteredOrders = orders.map((order) => {
           discount: order.discount,
           totalAmount: order.totalAmount,
         };
-      });        
+      });
       return res.status(200).json(filteredOrders);
     }
   } catch (error) {
@@ -138,3 +140,32 @@ const filteredOrders = orders.map((order) => {
       .json({ message: `Get user order error: ${error.message}` });
   }
 };
+
+export const updateOrderStatus = async (req, res) => {
+  try {
+    const { orderId, shopId } = req.params;
+    const { status } = req.body;
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    const shopOrder = order.shopOrders.find(
+      (o) => o.shop.toString() === shopId
+    );
+    if (!shopOrder)
+      return res.status(404).json({ message: "Shop order not found" });
+
+    shopOrder.status = status;
+    await order.save(); // <- FIXED
+
+    return res.status(200).json({ status: shopOrder.status });
+  } catch (error) {
+    console.error(error); // for debugging
+    return res.status(500).json({
+      message: "Order status error",
+    });
+  }
+};
+
