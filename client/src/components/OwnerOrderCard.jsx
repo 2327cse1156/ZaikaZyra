@@ -31,9 +31,10 @@ function OwnerOrderCard({ data }) {
         { status: normalizedStatus },
         { withCredentials: true }
       );
+      console.log("API Response:", result.data);
+      
       setAvailableBoys(result.data.availableBoys);
       console.log(result.data);
-      
     } catch (error) {
       console.error(error);
     }
@@ -67,7 +68,7 @@ function OwnerOrderCard({ data }) {
   const progressPercent = ((currentStep - 1) / (steps.length - 1)) * 100;
 
   return (
-    <div className="relative w-full bg-white/90 border border-gray-200 shadow-md rounded-2xl p-6 flex flex-col animate-fadeIn">
+    <div className="relative w-full bg-white/90 border border-gray-200 shadow-md rounded-2xl p-6 flex flex-col animate-fadeIn hover:shadow-xl transition-shadow duration-300 backdrop-blur-sm">
       {/* Header */}
       <div
         className="flex justify-between items-start cursor-pointer"
@@ -79,12 +80,12 @@ function OwnerOrderCard({ data }) {
           </h2>
           <p className="text-sm text-gray-500">{data.user.email}</p>
           <p className="flex items-center gap-2 text-sm text-gray-500">
-            <MdPhone /> {data.user.mobile}
+            <MdPhone className="text-orange-500"/> {data.user.mobile}
           </p>
         </div>
         <div className="flex items-center gap-4">
           <span
-            className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+            className={`shadow-sm transition-colors duration-300 px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
               currentStatus
             )}`}
           >
@@ -108,7 +109,7 @@ function OwnerOrderCard({ data }) {
                   className="flex flex-col items-center w-1/4 relative z-10"
                 >
                   <div
-                    className={`w-10 h-10 flex items-center justify-center rounded-full border-2 text-lg transition-all ${
+                    className={`shadow-md ring-4 ring-orange-200 w-10 h-10 flex items-center justify-center rounded-full border-2 text-lg transition-all ${
                       isCompleted
                         ? isCurrent
                           ? "bg-orange-500 border-orange-500 text-white animate-bounce"
@@ -126,7 +127,7 @@ function OwnerOrderCard({ data }) {
             })}
             <div className="absolute top-5 left-0 right-0 h-1 bg-gray-200 rounded">
               <div
-                className="h-1 bg-orange-500 rounded transition-all duration-700"
+                className="h-1 bg-gradient-to-r from-orange-400 to-orange-600 rounded transition-all duration-700"
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
@@ -151,12 +152,12 @@ function OwnerOrderCard({ data }) {
               {data.shopOrders.shopOrderItems.map((item) => (
                 <div
                   key={item._id}
-                  className="flex items-center gap-4 border-b pb-2 last:border-b-0"
+                  className="hover:bg-gray-50 rounded-lg transition flex items-center gap-4 border-b pb-3 last:border-b-0"
                 >
                   <img
                     src={item.item.image}
                     alt={item.item.name}
-                    className="w-16 h-16 object-cover rounded-lg"
+                    className="w-16 h-16 object-cover rounded-lg hover:scale-105 transition-transform"
                   />
                   <div className="flex-1">
                     <p className="font-medium text-gray-800">
@@ -199,6 +200,14 @@ function OwnerOrderCard({ data }) {
               <option value="delivered">Delivered</option>
             </select>
           </div>
+
+          {data.shopOrders.status === "out for delivery" && 
+          <div>
+            <p>Available Delivery Boys:</p>
+            {availableBoys.length>0?(availableBoys.map((b,index)=>(
+              <div key={index} className="flex items-center justify-between bg-orange-50 border-orange-200 px-3 py-2 rounded-lg"><span className="font-medium text-gray-800">{b.fullName} ({b.mobile})</span>
+              <MdPhone className="text-orange-500"/>{b.mobile}</div>
+            ))):<div>Waiting for Delivery Boys Available</div>}</div>}
 
           {/* Total */}
           <div className="flex justify-end text-lg font-semibold text-gray-800 border-t pt-4">
