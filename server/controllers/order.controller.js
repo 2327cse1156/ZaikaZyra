@@ -124,10 +124,8 @@ export const getMyOrders = async (req, res) => {
           createdAt: order.createdAt,
           deliveryAddress: order.deliveryAddress,
 
-          
           shopOrders: shopOrder,
 
-          
           cartSubtotal: order.cartSubtotal,
           deliveryFee: order.deliveryFee,
           discount: order.discount,
@@ -306,12 +304,13 @@ export const acceptOrder = async (req, res) => {
     );
     shopOrder.assignedDeliveryBoy = req.userId;
     await order.save();
-
-    // Populate delivery boy details for owner response
-    await order.populate({
-      path: "shopOrders.assignedDeliveryBoy",
-      select: "fullName email mobile",
-    });
+    await order.populate([
+      {
+        path: "shopOrders.assignedDeliveryBoy",
+        select: "fullName email mobile",
+      },
+      { path: "shopOrders.shop", select: "name" }, // ✅ added this
+    ]);
 
     const updatedShopOrder = order.shopOrders.find((so) =>
       so._id.equals(assignment.shopOrderId)
@@ -328,3 +327,58 @@ export const acceptOrder = async (req, res) => {
   }
 };
 
+export const getCurrentOrder = async (req, res) => {
+  try {
+    const assignment = await DeliveryAssignment.findOne({
+      assignedTo: req.userId,
+      status: "assigned",
+    })
+      .populate("shop", "name")
+      .populate("assignedTo", "fullName email mobile location")
+      .populate({
+        path: "order",
+        populate: [
+          { path: "user", select: "fullName email location mobile" },
+          { path: "shopOrders.shop", select: "name" },
+        ],
+      });
+    if (!assignment) {
+      return res.status(400).json({
+        message: "No current assignment",
+      });
+    }
+    if (!assignment.order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+    const shopOrder = assignment.order.shopOrders.find((so) =>
+      so._id.equals(assignment.shopOrderId)
+    );
+    if (!shopOrder) {
+      return res.status(404).json({ message: "Shop order not found" });
+    }
+
+    let deliveryBoyLocation = { lat: null, lon: null };
+    deliveryBoyLocation.lat =
+      assignment.assignedTo.location.coordinates?.[1] || null;
+    deliveryBoyLocation.lon =
+      assignment.assignedTo.location.coordinates?.[0] || null;
+
+    let customerLocation = { lat: null, lon: null };
+    customerLocation.lat =
+      assignment.order.deliveryAddress.coordinates?.[1] || null;
+    customerLocation.lon =
+      assignment.order.deliveryAddress.coordinates?.[0] || null;
+
+    return res.status(200).json({
+      _id: assignment.order._id,
+      user: assignment.order.user,
+      shopOrder,
+      deliveryAddress: assignment.order.deliveryAddress,
+      deliveryBoyLocation,
+      customerLocation,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Error fetching current order" });
+  }
+};
