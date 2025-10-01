@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MdPhone } from "react-icons/md";
 import {
   FaBox,
@@ -17,28 +17,6 @@ function OwnerOrderCard({ data }) {
   const [availableBoys, setAvailableBoys] = useState([]);
   const [expanded, setExpanded] = useState(false);
   const dispatch = useDispatch();
-
-  // Handle status update
-  const handleUpdateStatus = async (orderId, shopId, status) => {
-    const normalizedStatus = status.toLowerCase();
-    try {
-      dispatch(
-        updateOrderStatus({ orderId, shopId, status: normalizedStatus })
-      );
-
-      const result = await axios.post(
-        `${serverUrl}/api/order/update-status/${orderId}/${shopId}`,
-        { status: normalizedStatus },
-        { withCredentials: true }
-      );
-      console.log("API Response:", result.data);
-      
-      setAvailableBoys(result.data.availableBoys);
-      console.log(result.data);
-    } catch (error) {
-      console.error(error);
-    }
-  };
 
   const steps = [
     { label: "Pending", icon: <FaBox /> },
@@ -67,6 +45,35 @@ function OwnerOrderCard({ data }) {
     steps.findIndex((s) => s.label.toLowerCase() === currentStatus) + 1;
   const progressPercent = ((currentStep - 1) / (steps.length - 1)) * 100;
 
+  // Update order status
+  const handleUpdateStatus = async (orderId, shopId, status) => {
+    const normalizedStatus = status.toLowerCase();
+    try {
+      dispatch(updateOrderStatus({ orderId, shopId, status: normalizedStatus }));
+
+      const result = await axios.post(
+        `${serverUrl}/api/order/update-status/${orderId}/${shopId}`,
+        { status: normalizedStatus },
+        { withCredentials: true }
+      );
+
+      if (result.data.assignedDeliveryBoy) {
+        setAvailableBoys([result.data.assignedDeliveryBoy]);
+      } else if (result.data.availableBoys) {
+        setAvailableBoys(result.data.availableBoys);
+      }
+    } catch (error) {
+      console.error("Error updating order status:", error);
+    }
+  };
+
+  // Optional: fetch latest assigned delivery boy info on mount
+  useEffect(() => {
+    if (data.shopOrders.assignedDeliveryBoy) {
+      setAvailableBoys([data.shopOrders.assignedDeliveryBoy]);
+    }
+  }, [data.shopOrders.assignedDeliveryBoy]);
+
   return (
     <div className="relative w-full bg-white/90 border border-gray-200 shadow-md rounded-2xl p-6 flex flex-col animate-fadeIn hover:shadow-xl transition-shadow duration-300 backdrop-blur-sm">
       {/* Header */}
@@ -75,12 +82,10 @@ function OwnerOrderCard({ data }) {
         onClick={() => setExpanded((prev) => !prev)}
       >
         <div>
-          <h2 className="text-lg font-semibold text-gray-800">
-            {data.user.fullName}
-          </h2>
+          <h2 className="text-lg font-semibold text-gray-800">{data.user.fullName}</h2>
           <p className="text-sm text-gray-500">{data.user.email}</p>
           <p className="flex items-center gap-2 text-sm text-gray-500">
-            <MdPhone className="text-orange-500"/> {data.user.mobile}
+            <MdPhone className="text-orange-500" /> {data.user.mobile}
           </p>
         </div>
         <div className="flex items-center gap-4">
@@ -104,10 +109,7 @@ function OwnerOrderCard({ data }) {
               const isCompleted = currentStep >= index + 1;
               const isCurrent = currentStep === index + 1;
               return (
-                <div
-                  key={step.label}
-                  className="flex flex-col items-center w-1/4 relative z-10"
-                >
+                <div key={step.label} className="flex flex-col items-center w-1/4 relative z-10">
                   <div
                     className={`shadow-md ring-4 ring-orange-200 w-10 h-10 flex items-center justify-center rounded-full border-2 text-lg transition-all ${
                       isCompleted
@@ -119,9 +121,7 @@ function OwnerOrderCard({ data }) {
                   >
                     {step.icon}
                   </div>
-                  <p className="text-xs mt-2 text-gray-600 text-center">
-                    {step.label}
-                  </p>
+                  <p className="text-xs mt-2 text-gray-600 text-center">{step.label}</p>
                 </div>
               );
             })}
@@ -136,12 +136,9 @@ function OwnerOrderCard({ data }) {
           {/* Delivery Address */}
           <div className="border border-gray-100 rounded-xl p-4">
             <p className="font-medium text-gray-700 mb-2">Delivery Address</p>
+            <p className="text-sm text-gray-500">{data?.deliveryAddress?.text}</p>
             <p className="text-sm text-gray-500">
-              {data?.deliveryAddress?.text}
-            </p>
-            <p className="text-sm text-gray-500">
-              Lat: {data?.deliveryAddress?.latitude}, Lon:{" "}
-              {data?.deliveryAddress?.longitude}
+              Lat: {data?.deliveryAddress?.latitude}, Lon: {data?.deliveryAddress?.longitude}
             </p>
           </div>
 
@@ -160,9 +157,7 @@ function OwnerOrderCard({ data }) {
                     className="w-16 h-16 object-cover rounded-lg hover:scale-105 transition-transform"
                   />
                   <div className="flex-1">
-                    <p className="font-medium text-gray-800">
-                      {item.item.name}
-                    </p>
+                    <p className="font-medium text-gray-800">{item.item.name}</p>
                     <p className="text-sm text-gray-500">
                       Qty: {item.quantity} × ₹{item.price}
                     </p>
@@ -186,11 +181,7 @@ function OwnerOrderCard({ data }) {
             <select
               value={currentStatus}
               onChange={(e) =>
-                handleUpdateStatus(
-                  data._id,
-                  data.shopOrders.shop._id,
-                  e.target.value
-                )
+                handleUpdateStatus(data._id, data.shopOrders.shop._id, e.target.value)
               }
               className="px-3 py-1 border border-gray-300 rounded-lg text-sm"
             >
@@ -201,13 +192,27 @@ function OwnerOrderCard({ data }) {
             </select>
           </div>
 
-          {data.shopOrders.status === "out for delivery" && 
-          <div>
-            <p>Available Delivery Boys:</p>
-            {availableBoys.length>0?(availableBoys.map((b,index)=>(
-              <div key={index} className="flex items-center justify-between bg-orange-50 border-orange-200 px-3 py-2 rounded-lg"><span className="font-medium text-gray-800">{b.fullName} ({b.mobile})</span>
-              <MdPhone className="text-orange-500"/>{b.mobile}</div>
-            ))):<div>Waiting for Delivery Boys Available</div>}</div>}
+          {/* Assigned Delivery Boy */}
+          {currentStatus === "out for delivery" && (
+            <div className="border border-gray-100 rounded-xl p-4">
+              <p className="font-medium text-gray-700 mb-2">Delivery Boy</p>
+              {availableBoys.length > 0 ? (
+                availableBoys.map((b, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between bg-orange-50 border-orange-200 px-3 py-2 rounded-lg mb-2"
+                  >
+                    <span className="font-medium text-gray-800">
+                      {b.fullName} ({b.mobile})
+                    </span>
+                    <MdPhone className="text-orange-500" />
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-gray-500">Waiting for Delivery Boys to Accept</p>
+              )}
+            </div>
+          )}
 
           {/* Total */}
           <div className="flex justify-end text-lg font-semibold text-gray-800 border-t pt-4">
@@ -216,6 +221,7 @@ function OwnerOrderCard({ data }) {
         </div>
       )}
 
+      {/* Styles */}
       <style>{`
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(20px); }

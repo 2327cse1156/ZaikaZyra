@@ -99,8 +99,8 @@ export const getMyOrders = async (req, res) => {
         .sort({ createdAt: -1 })
         .populate("shopOrders.shop", "name")
         .populate("shopOrders.owner", "name email mobile")
-        .populate("shopOrders.shopOrderItems.item", "name image price");
-
+        .populate("shopOrders.shopOrderItems.item", "name image price")
+        .populate("shopOrders.assignedDeliveryBoy", "fullName email mobile");
       return res.status(200).json(orders);
     }
 
@@ -109,7 +109,8 @@ export const getMyOrders = async (req, res) => {
         .sort({ createdAt: -1 })
         .populate("shopOrders.shop", "name")
         .populate("user")
-        .populate("shopOrders.shopOrderItems.item", "name image price");
+        .populate("shopOrders.shopOrderItems.item", "name image price")
+        .populate("shopOrders.assignedDeliveryBoy", "fullName email mobile");
 
       const filteredOrders = orders.map((order) => {
         const shopOrder = order.shopOrders.find(
@@ -123,10 +124,10 @@ export const getMyOrders = async (req, res) => {
           createdAt: order.createdAt,
           deliveryAddress: order.deliveryAddress,
 
-          // 📌 only the current owner's part
+          
           shopOrders: shopOrder,
 
-          // 📌 totals
+          
           cartSubtotal: order.cartSubtotal,
           deliveryFee: order.deliveryFee,
           discount: order.discount,
@@ -276,6 +277,7 @@ export const acceptOrder = async (req, res) => {
     if (assignment.status !== "broadcasted") {
       return res.status(400).json({ message: "Assignment not available" });
     }
+
     const alreadyAssigned = await DeliveryAssignment.findOne({
       assignedTo: req.userId,
       status: { $nin: ["broadcasted", "completed"] },
@@ -286,27 +288,43 @@ export const acceptOrder = async (req, res) => {
           "You have a pending assignment. Complete or cancel it before accepting a new one.",
       });
     }
+
+    // Assign delivery boy
     assignment.assignedTo = req.userId;
     assignment.status = "assigned";
     assignment.acceptedAt = new Date();
     await assignment.save();
 
+    // Update order
     const order = await Order.findById(assignment.order);
-
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
     }
+
     const shopOrder = order.shopOrders.find((so) =>
       so._id.equals(assignment.shopOrderId)
     );
-
     shopOrder.assignedDeliveryBoy = req.userId;
     await order.save();
-    // await order.populate("shopOrders.assignedDeliveryBoy")
 
-    return res.status(200).json({ message: "Assignment accepted" });
+    // Populate delivery boy details for owner response
+    await order.populate({
+      path: "shopOrders.assignedDeliveryBoy",
+      select: "fullName email mobile",
+    });
+
+    const updatedShopOrder = order.shopOrders.find((so) =>
+      so._id.equals(assignment.shopOrderId)
+    );
+
+    return res.status(200).json({
+      message: "Assignment accepted",
+      shopOrder: updatedShopOrder,
+      assignedDeliveryBoy: updatedShopOrder.assignedDeliveryBoy,
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Error accepting assignments" });
   }
 };
+

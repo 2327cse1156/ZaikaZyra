@@ -20,6 +20,23 @@ function DeliveryBoy() {
     }
   };
 
+  const acceptOrder = async (assignmentId) => {
+    try {
+      const result = await axios.get(
+        `${serverUrl}/api/order/accept-order/${assignmentId}`,
+        {
+          withCredentials: true,
+        }
+      );
+      console.log(result.data);
+      setAvailableAssignments((prev) =>
+      prev.filter((a) => a.assignmentId !== assignmentId)
+    );
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
     if (userData) {
       getAssignments();
@@ -78,14 +95,19 @@ function DeliveryBoy() {
                       {a.items.length} items | Subtotal:{" "}
                       <span className="font-semibold">₹{a.subtotal}</span>
                     </p>
-                    <button className="mt-4 bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-full shadow-md font-semibold transition-transform hover:scale-105 active:scale-95">
+                    <button
+                      onClick={() => acceptOrder(a.assignmentId)}
+                      className="mt-4 bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-full shadow-md font-semibold transition-transform hover:scale-105 active:scale-95"
+                    >
                       Accept Assignment
                     </button>
                   </div>
                 </>
               ))
             ) : (
-              <p className="text-center text-gray-500 text-lg animate-fadeIn">No available orders 🚫</p>
+              <p className="text-center text-gray-500 text-lg animate-fadeIn">
+                No available orders 🚫
+              </p>
             )}
           </div>
         </div>
