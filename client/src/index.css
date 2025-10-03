@@ -13,3 +13,13 @@
     height:100%;
     z-index:0;
 }
+.leaflet-animated{
+    stroke-dashoffset: 1000;
+    animation: dashmove 2s linear infinite;
+}
+
+@keyframes dash {
+    to {
+        stroke-dashoffset: 0;
+    }
+}

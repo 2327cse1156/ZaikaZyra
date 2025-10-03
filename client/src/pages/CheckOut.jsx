@@ -133,7 +133,7 @@ function CheckOut() {
     }
   };
 
-  // ✅ Forward Geocoding (search → lat/lon)
+  
   const getLatLngByAddress = async () => {
     if (!addressInput.trim()) {
       setPromoMessage("Please enter an address.");

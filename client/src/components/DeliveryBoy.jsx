@@ -5,11 +5,13 @@ import { serverUrl } from "../App";
 import { useEffect } from "react";
 import { useState } from "react";
 import { FaBiking, FaBox, FaMapMarkedAlt, FaTruck } from "react-icons/fa";
+import DeliveryBoyTracking from "./DeliveryBoyTracking";
 
 function DeliveryBoy() {
   const { userData } = useSelector((state) => state.user);
   const [availableAssignments, setAvailableAssignments] = useState([]);
   const [currentOrder, setCurrentOrder] = useState(null);
+  const [showOtpBox, setShowOtpBox] = useState(false);
   const getAssignments = async () => {
     try {
       const result = await axios.get(`${serverUrl}/api/order/get-assignment`, {
@@ -36,6 +38,9 @@ function DeliveryBoy() {
     } catch (error) {
       console.error(error);
     }
+  };
+  const handleSendOtp = (e) => {
+    setShowOtpBox(true);
   };
 
   const getCurrentOrder = async () => {
@@ -89,6 +94,7 @@ function DeliveryBoy() {
             {userData.location.coordinates[0]}
           </p>
         </div>
+
         {!currentOrder && (
           <div className="max-w-6xl mx-auto">
             <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-6 text-center animate-slideLeft">
@@ -101,7 +107,7 @@ function DeliveryBoy() {
                   <>
                     <div
                       key={index}
-                      className="bg-white/90 backdrop-blur-md border border-gray-200 shadow-lg rounded-2xl p-6 animate-fadeIn hover:shadow-xl transition"
+                      className="bg-white/95 backdrop-blur-md border border-gray-200 shadow-lg rounded-2xl p-6 animate-fadeIn hover:shadow-xl hover:translate-y-1 transition duration-300"
                     >
                       <h3 className="text-lg sm:text-xl font-semibold text-gray-800 flex items-center gap-2">
                         <FaBox className="text-green-600" /> {a.shopName}
@@ -116,7 +122,7 @@ function DeliveryBoy() {
                       </p>
                       <button
                         onClick={() => acceptOrder(a.assignmentId)}
-                        className="mt-4 bg-orange-500 w-full sm:w-auto hover:bg-orange-600 text-white px-6 py-2 rounded-full shadow-md font-semibold transition-transform hover:scale-105 active:scale-95"
+                        className="mt-4 bg-gradient-to-r from-orange-500 to-orange-600 w-full sm:w-auto hover:from-orange-600 hover:to-orange-700 text-white px-6 py-2 rounded-full shadow-md font-semibold transition-transform hover:scale-105 active:scale-95"
                       >
                         Accept Assignment
                       </button>
@@ -134,16 +140,49 @@ function DeliveryBoy() {
 
         {currentOrder && (
           <div className="max-w-2xl mx-auto mt-10">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 text-center">Current Order📦</h2>
-            <div className="bg-white/90 backdrop-blur-md border border-gray-200 shadow-lg rounded-2xl p-6 animate-fadeIn">
-              <p className="text-lg font-semibold text-gray-800">{currentOrder?.shopOrder.shop.name}</p>
-              <p className="text-gray-600 mt-2 break-words text-sm sm:text-base"><FaMapMarkedAlt className="inline mr-1 text-red-500" />
-              {currentOrder?.deliveryAddress.text}</p>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4 text-center">
+              Current Order📦
+            </h2>
+            <div className="bg-white/95 backdrop-blur-md border border-gray-200 shadow-lg rounded-2xl p-6 animate-fadeIn">
+              <p className="text-lg font-semibold text-gray-800">
+                {currentOrder?.shopOrder.shop.name}
+              </p>
+              <p className="text-gray-600 mt-2 break-words text-sm sm:text-base">
+                <FaMapMarkedAlt className="inline mr-1 text-red-500" />
+                {currentOrder?.deliveryAddress.text}
+              </p>
               <p className="text-gray-500  mt-1 text-sm sm:text-base">
                 {currentOrder.shopOrder.shopOrderItems.length} items |{" "}
-               <span className="font-semibold">₹{currentOrder.shopOrder.subtotal}</span>
+                <span className="font-semibold">
+                  ₹{currentOrder.shopOrder.subtotal}
+                </span>
               </p>
             </div>
+
+            <DeliveryBoyTracking data={currentOrder} />
+            {!showOtpBox ? (
+              <button
+                onClick={handleSendOtp}
+                className="mt-6 w-full sm:w-auto bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-2 rounded-full shadow-md font-semibold transition-transform hover:scale-105 active:scale-95"
+              >
+                Mark As Delivered
+              </button>
+            ) : (
+              <div className="mt-6 bg-gray-50 p-4 rounded-lg shadow-md border border-gray-200">
+                <p className="text-gray-700 text-sm sm:text-base mb-3">
+                  Enter OTP to confirm delivery send to{" "}
+                  <span className="font-semibold">
+                    {currentOrder.user.fullName}
+                  </span>
+                </p>
+                <input
+                  type="text"
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-400 outline-none"
+                  placeholder="Enter OTP"
+                />
+                <button className=" ml-2 bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg shadow-md font-semibold transition-transform hover:scale-105 active:scale-95">Submit Otp</button>
+              </div>
+            )}
           </div>
         )}
       </div>
